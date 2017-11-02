@@ -1,0 +1,4 @@
+#ifndef INCLUDE_PLATFORM_HTTP_
+#define INCLUDE_PLATFORM_HTTP_
+
+#endif

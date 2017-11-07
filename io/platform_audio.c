@@ -1,5 +1,4 @@
 #include "platform_audio.h"
-#include "platform_IODevice.h"
 #include "platform_queue.h"
 #include "portaudio.h"
 #include <limits.h>

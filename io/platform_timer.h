@@ -4,11 +4,18 @@
 #ifndef _INCLUDE_PLATFORM_TIMER_H_
 #define _INCLUDE_PLATFORM_TIMER_H_
 #include <stdint.h>
-
+#ifndef _WIN32
+#include "container/platform_list_head.h"
+#endif
 typedef struct {
+#ifdef _WIN32
+  unsigned int id;
+#else
+  platform_list_head_t list_head;
+  unsigned int ms;
+#endif
   void (*callback)(void *);
   void *data;
-  unsigned int id;
 } platform_timer_t;
 
 platform_timer_t *platform_timer_new(void (*callback)(void *), uint16_t ms,

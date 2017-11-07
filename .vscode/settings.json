@@ -4,6 +4,7 @@
         "typeinfo": "cpp",
         "platform_vector.h": "c",
         "initializer_list": "c",
-        "type_traits": "c"
+        "type_traits": "c",
+        "platform_serialport.h": "c"
     }
 }

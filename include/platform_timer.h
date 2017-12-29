@@ -1,6 +1,4 @@
-/*
- * Bin's utility library
- */
+
 #ifndef _INCLUDE_PLATFORM_TIMER_H_
 #define _INCLUDE_PLATFORM_TIMER_H_
 #include <stdint.h>

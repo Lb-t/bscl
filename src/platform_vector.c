@@ -1,5 +1,5 @@
 #include "platform_vector.h"
-#include "common/platform_common.h"
+#include "platform_common.h"
 #include <limits.h>
 #include <stddef.h>
 

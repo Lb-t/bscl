@@ -1,6 +1,6 @@
 #ifndef INCLUDE_PLATFORM_LIST_HEAD_H_
 #define INCLUDE_PLATFORM_LIST_HEAD_H_
-#include "common/platform_common.h"
+#include "platform_common.h"
 
 typedef struct platform_list_head_t_ {
   struct platform_list_head_t_ *prev, *next;

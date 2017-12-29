@@ -1,6 +1,6 @@
 #ifndef INCLUDE_PLATFORM_VECTOR_H_
 #define INCLUDE_PLATFORM_VECTOR_H_
-#include "../common/platform_common.h"
+#include "platform_common.h"
 
 typedef struct {
   void *data;

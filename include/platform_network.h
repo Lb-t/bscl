@@ -2,36 +2,60 @@
 #define INCLUDE_PLATFORM_NETWORK_H_
 #include <stdbool.h>
 #include <stdint.h>
+#include <stdio.h>
 #include <string.h>
 
-typedef struct platform_udpBroadcaster_t_ platform_udpBroadcaster_t;
+#ifdef _WIN32
+#include <winsock2.h>
+#include <ws2tcpip.h>
+#else
+#include <arpa/inet.h>
+#include <fcntl.h>
+#include <netinet/in.h>
+#include <sys/socket.h>
+#include <sys/types.h>
+#include <unistd.h>
+#endif
 
-bool platform_udpBroadcaster_init(platform_udpBroadcaster_t *this,
-                                  uint16_t local_port, uint16_t remote_port);
-platform_udpBroadcaster_t *platform_udpBroadcaster_new(uint16_t local_port,
-                                                       uint16_t remote_port);
-void platform_udpBroadcaster_delete(platform_udpBroadcaster_t *this);
-size_t platform_udpBroadcaster_write(platform_udpBroadcaster_t *this,
-                                     void *data, size_t len);
-size_t platform_udpBroadcaster_read(platform_udpBroadcaster_t *this, void *data,
-                                    size_t len);
+#ifdef _WIN32
+void platform_netowrk_init(void);
+#else
+#define platform_netowrk_init()
+#endif
 
-typedef struct platform_tcpClient_t_ platform_tcpClient_t;
-platform_tcpClient_t *platform_tcpClient_new(uint16_t port);
-bool platform_tcpClient_init(platform_tcpClient_t *this, uint16_t port);
-bool platform_tcpClient_connect(unsigned long server_ip, uint16_t server_port);
-size_t platform_tcpClient_read(platform_tcpClient_t *this, void *buf,
-                               size_t len);
-size_t platform_tcpClient_write(platform_tcpClient_t *this, void *buf,
-                                size_t len);
+int platform_udp_new(const uint16_t port);
+int platform_udp_receive(const int fd, void *const data, const int len,
+                         uint32_t *const ip, uint16_t *const port);
+static inline int platform_udp_broadcast(const int fd, void const *const data,
+                                         const int len, const uint16_t port) {
+  struct sockaddr_in addr = {.sin_family = AF_INET,
+                             .sin_addr.s_addr = INADDR_BROADCAST};
+  addr.sin_port = htons(port);
+  return sendto(fd, data, len, 0, (struct sockaddr *)&addr,
+                sizeof(struct sockaddr_in));
+}
 
-typedef void (*platform_tcpServerCallback_t)(platform_tcpClient_t *client,
-                                             void *buf, size_t len);
+static inline int platform_udp_unicast(const int fd, void const *const data,
+                                       const int len, const uint32_t ip,
+                                       const uint16_t port) {
+  struct sockaddr_in addr = {.sin_family = AF_INET, .sin_addr.s_addr = ip};
+  addr.sin_port = htons(port);
+  return sendto(fd, data, len, 0, (struct sockaddr *)&addr,
+                sizeof(struct sockaddr_in));
+}
 
-typedef struct platform_tcpServer_t_ platform_tcpServer_t;
-platform_tcpServer_t *
-platform_tcpServer_new(uint16_t port, platform_tcpServerCallback_t callback);
-bool platform_tcpServer_init(platform_tcpServer_t *this, uint16_t port,
-                             platform_tcpServerCallback_t callback);
-
+int platform_tcp_new(const uint16_t port);
+static inline int platform_tcp_connect(const int fd, const uint32_t ip,
+                                       const uint16_t port) {
+  struct sockaddr_in addr;
+  // connect to server
+  addr.sin_family = AF_INET;
+  addr.sin_port = htons(port);
+  addr.sin_addr.s_addr = ip;
+  return connect(fd, (struct sockaddr *)&addr, sizeof(struct sockaddr_in));
+}
+#define platform_tcp_listen(fd) listen(fd, SOMAXCONN)
+#define platform_tcp_read(fd, data, len) recv(fd, data, len, 0)
+#define platform_tcp_write(fd, data, len) send(fd, data, len, 0)
+int platform_tcp_accept(const int fp, uint32_t *const ip, uint16_t *const port);
 #endif /*!INCLUDE_PLATFORM_NETWORK_H_*/

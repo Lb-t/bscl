@@ -1,11 +1,11 @@
 #ifndef INCLUDE_PLATFORM_HTTP_
 #define INCLUDE_PLATFORM_HTTP_
-#include "io/platform_network_private.h"
-
-typedef struct { platform_tcpClient_t tcpClient; } platform_http_client_t;
+#include "platform_network.h"
+#include <stdint.h>
+typedef struct { int fd; } platform_http_client_t;
 
 typedef enum {
-  Platform_Http_Method_GET,
+  Platform_Http_Method_GET = 0,
   Platform_Http_Method_HEAD,
   Platform_Http_Method_POST,
   Platform_Http_Method_PUT,
@@ -73,11 +73,23 @@ typedef enum {
   Platform_Http_Head_SetCookie,
   Platform_Http_Head_WWWAuthenticate
 } Platform_Http_Head;
-typedef struct{}platform_http_head_t;
-typedef struct { Platform_Http_Method method,Platform_Http_Head head; } platform_http_request_t;
-void platform_http_request_set_contents(platform_http_request_t *this,
+typedef struct {
+} platform_http_head_t;
+typedef struct {
+  Platform_Http_Method method;
+  Platform_Http_Head head;
+} platform_http_request_t;
+void platform_http_request_set_contents(platform_http_request_t *request,
                                         char *contents);
-void platform_http_request_append_head(platform_http_request_t *this,  
+void platform_http_request_append_head(platform_http_request_t *request,
                                        Platform_Http_Head head, char *value);
-void platform_http_request(platform_http_client_t *this,Platform_Http_Method method,platform_http_head_t*heads);
+void platform_http_client_request(platform_http_client_t *client,
+                                  const char *url,
+                                  const Platform_Http_Method method,
+                                  const char *heads, char *body);
+
+#define platform_http_client_connect(client, ip)                               \
+  platform_http_client_connect_with_port(client, ip, 80)
+#define platform_http_client_connect_with_port(client, ip, port)               \
+  platform_tcp_connect((client)->fd, ip, port)
 #endif

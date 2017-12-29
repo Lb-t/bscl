@@ -1,7 +1,7 @@
 #ifndef INCLUDE_PLATFORM_QUEUE_H_
 #define INCLUDE_PLATFORM_QUEUE_H_
-#include "common/platform_common.h"
-#include "container/platform_list.h"
+#include "platform_common.h"
+#include "platform_list.h"
 #define platform_queue_t platform_list_t
 #define platform_queue_push(queue, data, len)                                  \
   platform_list_insert(queue, NULL, data, len)

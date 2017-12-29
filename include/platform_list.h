@@ -1,15 +1,8 @@
-/*
- * list.h
- *
- *  Created on: 2016骞�6鏈�29鏃�
- *      Author: qh
- */
-
 #ifndef _INCLUDE_PLATFORM_LIST_H_
 #define _INCLUDE_PLATFORM_LIST_H_
-#include "common/platform_common.h"
-#include "stdbool.h"
-#include "stdint.h"
+#include "platform_common.h"
+#include <stdbool.h>
+#include <stdint.h>
 
 typedef struct platform_list_t_ platform_list_t;
 typedef struct platform_list_item_t_ platform_list_item_t;

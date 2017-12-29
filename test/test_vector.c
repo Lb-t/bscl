@@ -1,5 +1,6 @@
-#include "../container/platform_vector.h"
 #include "cmockery/cmockery.h"
+#include "platform_vector.h"
+
 
 // A test case that does nothing and succeeds.
 void test_vector1(void **state) {

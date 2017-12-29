@@ -1,10 +1,10 @@
 #include "platform_timer.h"
-#include "common/platform_common.h"
+#include "platform_common.h"
 
 #ifdef _WIN32
 #include <windows.h>
 //#include <mmsystem.h>
-#pragma comment(lib, "Winmm.lib")
+//#pragma comment(lib, "Winmm.lib")
 #else
 #include <signal.h>
 #include <stdio.h>

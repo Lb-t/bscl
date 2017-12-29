@@ -1,6 +1,6 @@
 #ifndef INCLUDE_RINGBUFFER_H_
 #define INCLUDE_RINGBUFFER_H_
-#include "common/platform_common.h"
+#include "platform_common.h"
 typedef struct {
   void *data;
   size_t capacity;

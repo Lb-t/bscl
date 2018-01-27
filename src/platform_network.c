@@ -50,8 +50,8 @@ void platform_network_get_local_ip(void) {
 #ifdef _WIN32
   unsigned long argp = 1;
   ioctlsocket(fd, FIONBIO, &argp);
-#elif
-  ioctl(sockfd, FIONBIO, 1);
+#else
+  ioctl(fd, FIONBIO, 1);
 #endif
 
 #if (RAND_MAX > 0xffff)
@@ -100,6 +100,7 @@ void platform_network_get_local_ip(void) {
   platform_network_close_socket(fd);
   return;
 }
+#ifdef _WIN32
 void platform_netowrk_init(void) {
   WSADATA wsaData;
   static bool isInitialized = false;
@@ -113,6 +114,7 @@ void platform_netowrk_init(void) {
     isInitialized = true;
   }
 }
+#endif
 
 int platform_udp_new(const uint16_t port) {
   platform_netowrk_init();

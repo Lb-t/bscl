@@ -73,7 +73,8 @@ platform_timer_t *platform_timer_new(void (*callback)(void *), uint16_t ms,
     }
     platform_timer_start = timer;
   } else {
-    platform_list_head_insert_prev(platform_timer_start, timer);
+    platform_list_head_insert_prev((platform_list_head_t *)platform_timer_start,
+                                   (platform_list_head_t *)timer);
   }
 #endif
   return timer;

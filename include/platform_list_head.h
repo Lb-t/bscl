@@ -28,7 +28,7 @@ if((newHead->next))\
 #define platform_list_head_insert_prev(head, newHead)                          \
   do {                                                                         \
     \
-if(head != newHead) {                                                          \
+if((head) != (newHead)) {                                                      \
       (newHead)->prev = (head)->prev;                                          \
       (newHead)->next = head;                                                  \
       (head)->prev = newHead;                                                  \
@@ -38,9 +38,9 @@ if(head != newHead) {                                                          \
   } while (0)
 #define platform_list_head_remove(head)                                        \
   do {                                                                         \
-    if (head->prev)                                                            \
-      head->prev->next = head->next;                                           \
-    if (head->next)                                                            \
-      head->next->prev = head->prev;                                           \
+    if ((head)->prev)                                                          \
+      (head)->prev->next = (head)->next;                                       \
+    if ((head)->next)                                                          \
+      (head)->next->prev = (head)->prev;                                       \
   } while (0)
 #endif

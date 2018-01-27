@@ -78,8 +78,6 @@ void platform_vector_insert(platform_vector_t *this, size_t index, size_t count,
 
     void *temp = realloc(this->data, this->capacity * this->type_size);
     if (!temp) {
-      printf(" realloc failed.capacity=%d msize=%d\n", this->capacity,
-             _msize(this->data));
       perror("realloc error:");
       exit(0);
       temp = malloc(this->capacity * this->type_size);
@@ -90,7 +88,6 @@ void platform_vector_insert(platform_vector_t *this, size_t index, size_t count,
       free(this->data);
       this->data = temp;
     } else {
-      printf(" realloc.capacity=%d msize=%d\n", this->capacity, _msize(temp));
       this->data = temp;
     }
   }
@@ -100,7 +97,7 @@ void platform_vector_insert(platform_vector_t *this, size_t index, size_t count,
   // printf("insert capacity=%d size=%d data=%x\n", this->capacity, this->size,
   // this->data);
 
-  platform_assert(this->capacity * this->type_size <= _msize(this->data));
+  // platform_assert(this->capacity * this->type_size <= _msize(this->data));
   platform_assert(index + count <= this->capacity);
   memmove((char *)this->data + (index + count) * this->type_size,
           (char *)this->data + index * this->type_size,
@@ -127,8 +124,6 @@ void platform_vector_remove(platform_vector_t *this, size_t index,
     if (!this->data) {
       platform_abort();
     }
-    printf(" realloc.capacity=%d msize=%d\n", this->capacity,
-           _msize(this->data));
   }
 }
 

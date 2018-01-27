@@ -20,7 +20,7 @@ AR = ar
 SOURCES_DIR =  src 
 TEST_DIR =  test
 # output path
-OUTPUT_DIR = build
+OUTPUT_DIR = lib
 
 TARGET =vlcplatform
 
@@ -39,7 +39,7 @@ ASM_SOURCES =  \
 #######################################
 # CFLAGS
 #######################################
-CFLAGS = 
+CFLAGS = -g
 
 # macros for gcc
 # AS defines
@@ -66,18 +66,25 @@ all:$(deps) $(objects)
 	@-mkdir $(OUTPUT_DIR) 
 	@echo "build lib$(TARGET).a lib$(TARGET).dll lib$(TARGET).dll.a"
 	@$(AR) rcs $(OUTPUT_DIR)/lib$(TARGET).a $(objects)
-	@$(CC)  -shared -fPIC -o $(OUTPUT_DIR)/lib$(TARGET).dll $(objects) -Wl,--out-implib,$(OUTPUT_DIR)/lib$(TARGET).dll.a,--output-def,$(OUTPUT_DIR)/lib$(TARGET).def -lws2_32 -lwinmm 
+#	@$(CC)  -shared -fPIC -o $(OUTPUT_DIR)/lib$(TARGET).dll $(objects) -Wl,--out-implib,$(OUTPUT_DIR)/lib$(TARGET).dll.a,--output-def,$(OUTPUT_DIR)/lib$(TARGET).def -lws2_32 -lwinmm 
 # deps
 deps := $(patsubst %.c,%.d, $(C_SOURCES))
 sinclude $(deps)	
 
 $(objects): %.o: %.c
 	@echo "compile $<"
-	@$(CC) -o $@  -c $< $(C_INCLUDES) $(CFLAGS)
+	@$(CC) -o $@  -c $< $(C_INCLUDES) $(CFLAGS) -g -ggdb
 
 $(deps):%.d:%.c
 	@$(CC) -MM $< $(C_INCLUDES) > $@ 
 
+	
+.PHONY :test
+test:$(deps) $(objects)
+	$(CC) -o test/test_bstree.o  -c test/test_bstree.c $(C_INCLUDES) $(CFLAGS)
+	@$(CC) -o test/test test/test_bstree.o $(objects)  -g 
+	
+	
 #######################################
 # clean up
 #######################################

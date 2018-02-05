@@ -114,78 +114,57 @@ platform_bstree_t *platform_bstree_successor(platform_bstree_t *tree) {
   return tree->parent;
 }
 
-static platform_bstree_remove_item(platform_bstree_t *item) {
+static platform_bstree_t *platform_bstree_remove_item(platform_bstree_t *tree,
+                                                      platform_bstree_t *item) {
+  platform_bstree_t *x;
   if (!item->left) {
-    if (item->parent) {
-      if (item->parent->left == item) {
-        item->parent->left = item->right;
-      } else {
-        item->parent->right = item->right;
-      }
-    }
-    if (item->right)
-      item->right->parent = item->parent;
+    x = item->right;
   } else if (!item->right) {
-    if (item->parent) {
-      if (item->parent->left == item) {
-        item->parent->left = item->left;
-      } else {
-        item->parent->right = item->left;
-      }
-    }
-    item->left->parent = item->parent;
+    x = item->left;
   } else {
-    platform_bstree_t *min = platform_bstree_minimum(item->right);
-    printf("found successor ");
-    min->c->print_value(min->data);
-    printf("\n");
-
-    if (min == item->right) {
-      // just replace it
+    x = platform_bstree_minimum(item->right);
+    if (x == item->right) {
 
     } else {
-      min->parent->left = min->right;
-      if (min->right) {
-        min->right->parent = min->parent;
+      if (x->right) {
+        x->right->parent = x->parent;
       }
-      min->right = item->right;
-      item->right->parent = min;
+      x->parent->left = x->right;
+      x->right = item->right;
+      x->right->parent = x;
     }
-
-    if (item->parent) {
-      if (item->parent->left == item) {
-        item->parent->left = min;
-      } else {
-        item->parent->right = min;
-      }
-    }
-
-    if (item->left)
-      item->left->parent = min;
-    min->parent = item->parent;
-    min->left = item->left;
+    x->left = item->left;
+    if (x->left)
+      x->left->parent = x;
   }
 
+  if (item == tree) {
+    tree = x;
+  } else {
+    if (item->parent->left == item) {
+      item->parent->left = x;
+    } else {
+      item->parent->right = x;
+    }
+  }
+  if (x)
+    x->parent = item->parent;
   free(item);
+  return tree;
 }
 
-void platform_bstree_remove(platform_bstree_t *tree, void *data) {
+platform_bstree_t *platform_bstree_remove(platform_bstree_t *tree, void *data) {
   platform_bstree_t *temp;
   while (temp = platform_bstree_find(tree, data)) {
-
-    printf("found with data=%d temp=%d\n", *(int *)data, temp);
-    tree = temp->parent;
-    platform_bstree_remove_item(temp);
-    platform_bstree_print(tree, 0);
-    printf("\n\n");
+    tree = platform_bstree_remove_item(tree, temp);
   }
+  return tree;
 }
 
 #ifndef NODEBUG
-void platform_bstree_print(platform_bstree_t *tree, int blk) {
+void platform_bstree_print2(platform_bstree_t *tree, int blk) {
   for (int i = 0; i < blk; ++i)
     printf(" ");
-
   printf("|—");
   if (!tree) {
     printf("*");
@@ -193,9 +172,19 @@ void platform_bstree_print(platform_bstree_t *tree, int blk) {
   }
   tree->c->print_value(tree->data);
   printf("\n ");
-  platform_bstree_print(tree->left, blk + 1);
+  platform_bstree_print2(tree->left, blk + 1);
   printf("\n ");
-  platform_bstree_print(tree->right, blk + 1);
+  platform_bstree_print2(tree->right, blk + 1);
   // printf("\n");
 }
+
+void platform_bstree_print(platform_bstree_t *tree) {
+  if (!tree)
+    return;
+  platform_bstree_print(tree->left);
+  tree->c->print_value(tree->data);
+  printf(" ");
+  platform_bstree_print(tree->right);
+}
+
 #endif

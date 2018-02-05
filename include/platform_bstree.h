@@ -23,7 +23,7 @@ platform_bstree_t *platform_bstree_new(void *data,
                                        const platform_bstree_class_t *c);
 void platform_bstree_insert(platform_bstree_t *this, void *data);
 platform_bstree_t *platform_bstree_find(platform_bstree_t *this, void *data);
-void platform_bstree_print(platform_bstree_t *tree, int);
+void platform_bstree_print(platform_bstree_t *tree);
 #define platform_bstree_item_data(item) (item->data)
 #define platform_bstree_item_size(item) (item->size)
 #define platform_bstree_item_parent(item) (item->parent)

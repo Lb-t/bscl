@@ -1,7 +1,6 @@
 #ifndef INCLUDE_PLATFORM_H_
 #define INCLUDE_PLATFORM_H_
 
-#include "platform_audio.h"
 #include "platform_common.h"
 #include "platform_crc.h"
 #include "platform_list.h"

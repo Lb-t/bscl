@@ -1,4 +1,4 @@
-﻿#ifndef INCLDUE_WAVE_H
+#ifndef INCLDUE_WAVE_H
 #define INCLDUE_WAVE_H
 #include <stddef.h>
 #include <stdint.h>

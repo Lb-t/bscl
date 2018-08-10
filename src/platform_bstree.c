@@ -165,7 +165,7 @@ platform_bstree_t *platform_bstree_remove(platform_bstree_t *tree, void *data) {
 void platform_bstree_print2(platform_bstree_t *tree, int blk) {
   for (int i = 0; i < blk; ++i)
     printf(" ");
-  printf("|—");
+  printf("|--");
   if (!tree) {
     printf("*");
     return;

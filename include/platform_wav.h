@@ -18,7 +18,7 @@ typedef struct {
   uint32_t fmt_bytepsec;    // 1*8000*16/8
   uint16_t fmt_bytesample;  // 16
   uint16_t fmt_bitpsample;  // 16
-  char chDATA[4];           // ＂data ＂
+  char chDATA[4];           // data
   uint32_t DATALen;         //
 } platform_wav_header_t;
 #pragma pack(pop)

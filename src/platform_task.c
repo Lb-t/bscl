@@ -7,6 +7,7 @@ typedef struct{
 list_head_t head;
 runnable_entry_t entry;
 jmp_buf jumper;
+ sem_t sem;
 }platform_runnable_t;
  struct platform_task_t_{
   jmp_buf jumper;
@@ -29,6 +30,8 @@ static void*routine(void*arg){
   longjmp(runnable->jumper,1);
   }
 
+  
+  return NULL;
 }
 
 

@@ -1,13 +1,13 @@
 #pragma once
-#include "platform_queue.h"
-#include <setjmp.h>
 
 
-typedef int (*runnable_entry_t)(void*arg);
+typedef int (*platform_task_routine_t)(void*arg);
 typedef struct platform_task_t_ platform_task_t;
-
-platform_task_t* platform_task_new(void);
+typedef struct platform_scheduler_t_ platform_scheduler_t;
+platform_task_t* platform_task_new(platform_task_routine_t routine);
 void platform_task_delete(platform_task_t *task);
-int platform_task_register_runnable(platform_task_t *task,platform_runnable_t *runnable);
-int platform_task_wait(platform_task_t *task);
-int platform_task_unregister_runnable(platform_task_t *task,platform_runnable_t *runnable);
+int platform_task_start(platform_task_t *task);
+int platform_task_stop(platform_task_t *task);
+int platform_task_yeild(platform_task_t *task);
+
+

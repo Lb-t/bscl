@@ -22,7 +22,7 @@ TEST_DIR =  test
 # output path
 OUTPUT_DIR = lib
 
-TARGET =vlcplatform
+TARGET =ezc
 
 ######################################
 # source

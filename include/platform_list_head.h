@@ -10,7 +10,9 @@ typedef struct platform_list_head_t_ {
         &(name), &(name)                                                       \
     }
 
+
 #define platform_list_head_define(name) struct platform_list_head name = platform_list_head_init(name)
+
 
 #define platform_list_head_data(s, mem, head) (s *)((char *)(head)-offsetof(s, mem))
 #define platform_list_head_next(head) ((head)->next)
@@ -46,9 +48,9 @@ typedef struct platform_list_head_t_ {
 #define platform_listis_last(list, head) ((list) == (head)->next)
 #define platform_listis_empty(list) ((list)->next == (list))
 
-#define platform_listinsert_tail(list, head) platform_list_head_insert_prev(list, head)
+#define platform_list_insert_tail(list, head) platform_list_head_insert_prev(list, head)
 
-#define platform_listfirst_entry(ptr, type, member)                                    \
+#define platform_list_first_entry(ptr, type, member)                                    \
     platform_list_head_data(type, member, (ptr)->next)
 
 #define platform_listfor_each(pos, list)                                               \
@@ -65,10 +67,12 @@ typedef struct platform_list_head_t_ {
     for (pos = (list)->prev, n = pos->prev; pos != (list);                     \
          pos = n, n = pos->prev)
 
+
 #define platform_listfor_each_entry(pos, list, type, member)                           \
     for ((pos) = platform_list_head_data(type, member, (list)->next);                   \
          &(pos)->member != (list);                                             \
          (pos) = platform_list_head_data(type, member, (pos)->member.next))
+
 
 #define platform_listfor_each_entry_reverse(pos, list, type, member)                   \
     for (pos = platform_list_head_data(type, member, (list)->prev);                     \

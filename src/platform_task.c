@@ -1,64 +1,70 @@
 #include "platform_task.h"
 #include "platform_common.h"
-#include <pthread.h>
 #include "platform_list_head.h"
-#include <semaphore.h>
-typedef struct{
-list_head_t head;
-runnable_entry_t entry;
-jmp_buf jumper;
-}platform_runnable_t;
+#include <time.h>
+
  struct platform_task_t_{
+list_head_t head;
+platform_task_routine_t routine;
+jmp_buf jumper;
+   platform_scheduler_t *scheduler;
+};
+ struct platform_scheduler_t_{
   jmp_buf jumper;
-  pthread_t tid;
-  list_head_t runnable_list;
-  sem_t sem;
+  list_head_t tasks_list;
 };
 
-static void*routine(void*arg){
-  platform_task_t*task=arg;
+void platform_scheduler_start(platform_scheduler_t *scheduler){
  
-  /*config task entry*/
-  int ret=setjmp(&task->jumper);
-  if(ret==0)
-  {
+  while(1){
+    platform_task_t *task;
+    list_for_each_entry(task,&scheduler->tasks_list,platform_task_t,head)
+      {
+        int ret=setjmp(&scheduler->jumper);
+        if(ret==0){
+          longjmp(&task->jumper);
+        }
+      }
+    sleep(1);
   }
-  else{
-  platform_runnable_t *runnable;
-  /*jump to runnable*/
-  longjmp(runnable->jumper,1);
-  }
-
 }
 
+platform_scheduler_t* platform_scheduler_new(void){
+  platform_scheduler_t *scheduler=(platform_scheduler_t *)malloc(sizeof(platform_scheduler_t));
+  list_init(&scheduler->tasks_list); 
+  return scheduler;
+}
 
-
-platform_task_t* platform_task_new(void){
+platform_task_t* platform_task_new(platform_scheduler_t *scheduler){
   platform_task_t *task=(platform_task_t *)malloc(sizeof(platform_task_t ));
   if(!task)
     return NULL;
-  int ret=pthread_create(&task->tid,NULL,routine,task);
-  if(ret)
-  {
-    free(task);
-    return NULL;
-  }
-  list_init(&task->runnable_list);  
-  sem_init(&task->sem,0,0);
+  task->scheduler=scheduler;
+   
   return task;
 }
+
+int platform_task_start(platform_task_t*task,void*arg){
+  list_insert_tail(&scheduler.tasks_list,&task->head) ;
+  int ret=setjmp(&task->jumper);
+  if(ret==0){return 0;}
+  else{
+   ret= task->routine(arg);
+   list_head_remove(&task->head);
+   longjmp(&scheduler->jumper,ret);
+  }
+  return 0;
+}
+
+int platform_task_yeild(platform_task_t*task){
+  int ret=setjmp(&task->jumper); 
+  if(ret==0)
+    {
+      longjmp(&task->scheduler->jumper,0);
+
+    }
+  return 0; 
+}
 void platform_task_delete(platform_task_t *task);
-int platform_task_register_runnable(platform_task_t *task,platform_runnable_t *runnable){
-   platform_assert(task);
-   platform_assert(runnable);
-   list_insert_tail(&task->runnable_list,&runnable->head);  
-   return 0;
-}
-int platform_task_wait(platform_task_t *task){
-   setjmp(&task->jumper);
-   return 0;
-}
-int platform_task_unregister_runnable(platform_task_t *task,platform_runnable_t *runnable){
- list_head_remove(&runnable->head);
- return 0;
-}
+
+

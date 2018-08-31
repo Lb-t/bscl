@@ -19,9 +19,15 @@ int main(void) {
       if (res <= 0) {
         break;
       }
-      platform_tcp_write(client, status, sizeof(status));
-      platform_tcp_write(client, header, sizeof(header));
-      platform_tcp_write(client, body, sizeof(body));
+       res=platform_tcp_write(client, status, sizeof(status));
+	  if (res < 0)
+		  printf("res=%d\n", res);
+      res=platform_tcp_write(client, header, sizeof(header));
+	  if (res < 0)
+		  printf("res=%d\n", res);
+     res= platform_tcp_write(client, body, sizeof(body));
+	 if (res < 0)
+		 printf("res=%d\n", res);
     }
   }
 }

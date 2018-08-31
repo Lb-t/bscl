@@ -1,8 +1,8 @@
 #ifndef INCLUDE_PLATFORM_HASHMAP_H_
 #define INCLUDE_PLATFORM_HASHMAP_H_
 #include "platform_list_head.h"
-#include "platform_common.h"
 
+#include "platform_common.h"
 typedef struct {
   size_t key_size;
   platform_list_head_t **buck;

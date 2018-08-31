@@ -1,0 +1,22 @@
+cmake_minimum_required(VERSION 3.0)
+project(ezclib)
+include_directories(${CMAKE_SOURCE_DIR}/include)
+include_directories(d:/deve_libs/pthreads/include)
+link_directories(d:/deve_libs/pthreads/lib/x86)
+aux_source_directory(${CMAKE_SOURCE_DIR}/src SRC)
+add_library(ezc ${SRC})
+
+add_executable(test_vector ${CMAKE_SOURCE_DIR}/test/test_vector.c)
+target_link_libraries(test_vector ezc )
+
+add_executable(test_http ${CMAKE_SOURCE_DIR}/test/test_http.c)
+target_link_libraries(test_http ezc ws2_32 pthreadVC2)
+
+add_executable(test_network ${CMAKE_SOURCE_DIR}/test/test_network.c)
+target_link_libraries(test_network ezc ws2_32 pthreadVC2)
+
+add_executable(test_bstree ${CMAKE_SOURCE_DIR}/test/test_bstree.c)
+target_link_libraries(test_bstree ezc)
+
+add_executable(test_http_server ${CMAKE_SOURCE_DIR}/test/test_http_server.c)
+target_link_libraries(test_http_server ezc ws2_32 pthreadVC2)

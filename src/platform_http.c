@@ -18,7 +18,7 @@ int platform_http_parser_header(char *buf, size_t len,
   while (1) {
     current_line = next_line;
     // seek to next line
-    int i = 0;
+    unsigned int i = 0;
     while ((i + 1) < remain_len &&
            !(current_line[i] == '\r' && current_line[i + 1] == '\n')) {
       ++i;
@@ -50,7 +50,7 @@ int platform_http_parser_header(char *buf, size_t len,
     if (strstr(current_line, "Content-Type:") == current_line) {
       temp = current_line + sizeof("Content-Type:") - 1;
       char type[20] = {0};
-      int i = 0, j = 0;
+      unsigned int i = 0, j = 0;
       size_t len = next_line - current_line;
       do {
         if (temp[i] == ' ')

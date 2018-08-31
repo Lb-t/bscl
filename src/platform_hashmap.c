@@ -1,6 +1,7 @@
 #include "platform_hashmap.h"
 #include <stdlib.h>
 #include <stdint.h>
+#include "platform_common.h"
 size_t platform_hashmap_defalthash(void *key) { return 0; }
 
 platform_hashmap_t *platform_hashmap_new(size_t key_size, 

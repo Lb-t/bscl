@@ -1,5 +1,6 @@
 
 #include "platform_network.h"
+#define _TIMESPEC_DEFINED
 #include <pthread.h>
 void *test_udp(void *arg) {
   puts("test udp");

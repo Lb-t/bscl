@@ -86,6 +86,7 @@ typedef enum {
   Platform_Http_Head_WWWAuthenticate
 } Platform_Http_Head;
 typedef struct {
+	uint8_t a;
 } platform_http_head_t;
 typedef struct {
   Platform_Http_Method method;

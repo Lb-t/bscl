@@ -1,6 +1,8 @@
 #pragma once
 #define QUERY_NUM_MAX 16
+#ifndef PATH_MAX
 #define PATH_MAX 128
+#endif
 typedef struct {
     char key[PATH_MAX];
     char value[PATH_MAX];

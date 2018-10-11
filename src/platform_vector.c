@@ -16,7 +16,7 @@ platform_vector_t *platform_vector_new(size_t initial_size, void *initial_value,
   if (!initial_size) {
     vector->capacity = 1;
   } else {
-    vector->capacity = 1ul << (sizeof(size_t) * CHAR_BIT - 1);
+    vector->capacity = 1ull << (sizeof(size_t) * CHAR_BIT - 1);
     while (vector->capacity != 1 && (!(vector->capacity & initial_size))) {
       vector->capacity = vector->capacity >> 1;
     }

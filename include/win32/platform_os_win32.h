@@ -17,6 +17,8 @@ struct platform_os_task_attr {
     int priority;
 };
 
+
+/*task*/
 typedef void *(*platform_os_task_routine_t)(void *);
 
 #define platform_os_task_create(tid, attr, routine, arg)                         \
@@ -24,6 +26,8 @@ typedef void *(*platform_os_task_routine_t)(void *);
 #define platform_os_task_self() pthread_self()
 #define platform_os_task_join(tid, retval) pthread_join(tid, retval)
 
+
+/*mutex*/
 typedef pthread_mutex_t platform_os_mutex_t;
 
 #define platform_os_mutex_create(mutex) pthread_mutex_init(mutex, NULL)
@@ -39,6 +43,16 @@ static inline int platform_os_mutex_timedlock(platform_os_mutex_t *mutex, unsign
 }
 
 #define platform_os_mutex_delete(mutex) pthread_mutex_destroy(mutex)
+
+/*sem*/
+typedef sem_t platform_os_sem_t;
+
+#define platform_os_sem_create(sem,value)
+#define platform_os_sem_post(sem)
+#define platform_os_sem_wait(sem)
+#define platform_os_sem_trywait(sem)
+#define platform_os_sem_timedwait(sem,timeout)
+#define platform_os_sem_delete(sem)
 
 #elif defined(_MSC_VER)
 
@@ -65,6 +79,17 @@ static inline int platform_os_mutex_timedlock(platform_os_mutex_t *mutex, unsign
     return _Mtx_timedlock(*mutex, &ts);
 }
 #define platform_os_mutex_delete(mutex) _Mtx_destroy(*mutex)
+
+/*sem*/
+typedef void*  platform_os_sem_t;
+
+#define platform_os_sem_create(sem,value)
+#define platform_os_sem_post(sem)
+#define platform_os_sem_wait(sem)
+#define platform_os_sem_trywait(sem)
+#define platform_os_sem_timedwait(sem,timeout)
+#define platform_os_sem_delete(sem)
+
 #else 
 #error not supported compiler
 #endif

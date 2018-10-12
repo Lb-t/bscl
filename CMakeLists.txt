@@ -19,7 +19,7 @@ endif (CMAKE_SYSTEM_NAME MATCHES "Linux")
 
 set(CMAKE_C_STANDARD 11)
 
-add_library(ezc STATIC SHARED ${SRC})
+add_library(ezc STATIC  ${SRC})
 target_link_libraries(ezc ${OS_LIB})
 
 add_executable(test_vector ${CMAKE_SOURCE_DIR}/test/test_vector.c)
@@ -39,3 +39,6 @@ add_executable(test_http ${CMAKE_SOURCE_DIR}/test/test_http.c)
 target_link_libraries(test_http ezc )
 add_executable(test_network ${CMAKE_SOURCE_DIR}/test/test_network.c)
 target_link_libraries(test_network ezc )
+
+add_executable(test_sort ${CMAKE_SOURCE_DIR}/test/test_sort.c ${CMAKE_SOURCE_DIR}/src/platform_sort.c)
+

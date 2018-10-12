@@ -19,6 +19,48 @@ typedef struct
 
 static platform_serialport_mgr_t sp;
 
+typedef struct {
+	HKEY key;
+	int index;
+}platform_serialport_reg_t;
+
+int platform_serialport_list_begin(void ** sp_list)
+{
+	platform_serialport_reg_t *reg=malloc(sizeof(platform_serialport_reg_t));
+	int ret;
+	if (!reg) {
+          return PLATFORM_SERIALPORT_EMEM;
+	}
+	ret = RegOpenKeyEx(HKEY_LOCAL_MACHINE,"HARDWARE\\DEVICEMAP\\SERIALCOMM",
+		0, KEY_QUERY_VALUE, &reg->key);
+	if (ret != ERROR_SUCCESS) {
+          return PLATFORM_SERIALPORT_EFAIL;
+	}
+	reg->index = 0;
+	*sp_list = reg;
+	return 0;
+}
+int platform_serialport_list_next(void * sp_list, char * name, int len)
+{
+	platform_serialport_reg_t *reg = sp_list;
+	char value_name[20];
+	int value_len = 20;
+	int ret=RegEnumValue(reg->key, reg->index, value_name, &value_len,
+		NULL, NULL, (LPBYTE)name, &len);
+	if (ret != ERROR_SUCCESS) {
+          return PLATFORM_SERIALPORT_EFAIL;
+	}
+	++reg->index;
+	return 0;
+}
+int platform_serialport_list_end(void * sp_list)
+{
+	platform_serialport_reg_t *reg = sp_list;
+	RegCloseKey(reg->key);
+	free(reg);
+	return 0;
+}
+
 static int get_free_fd(void)
 {
 	for (int i = 0; i < MAX_OPEN_NUM; ++i)

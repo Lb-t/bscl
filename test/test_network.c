@@ -1,7 +1,6 @@
 
 #include "platform_network.h"
-#define _TIMESPEC_DEFINED
-#include <pthread.h>
+#include "platform_os.h"
 void *test_udp(void *arg) {
   puts("test udp");
   int udpClient = platform_udp_new(1256);
@@ -52,10 +51,10 @@ void *test_tcp_server(void *arg) {
     printf("new connection ip=%d.%d.%d.%d,port=%d fd=%d\n", ((uint8_t *)&ip)[0],
            ((uint8_t *)&ip)[1], ((uint8_t *)&ip)[2], ((uint8_t *)&ip)[3],
            ntohs(port), fd);
-    pthread_t tid;
+    platform_os_tid_t tid;
     int *arg = malloc(sizeof(int));
     *arg = fd;
-    pthread_create(&tid, NULL, test_tcp_server_conn, arg);
+    platform_os_task_create(&tid, NULL, test_tcp_server_conn, arg);
   }
 }
 
@@ -83,11 +82,11 @@ void *test_tcp_client(void *arg) {
 }
 
 int main(int argc, char *argv[]) {
-  pthread_t tid;
+  platform_os_tid_t tid;
   puts("test");
-  pthread_create(&tid, NULL, test_udp, NULL);
-  pthread_create(&tid, NULL, test_tcp_server, NULL);
-  pthread_create(&tid, NULL, test_tcp_client, NULL);
+  platform_os_task_create(&tid, NULL, test_udp, NULL);
+  platform_os_task_create(&tid, NULL, test_tcp_server, NULL);
+  platform_os_task_create(&tid, NULL, test_tcp_client, NULL);
   void *retval;
-  pthread_join(tid, &retval);
+  platform_os_task_join(tid, &retval);
 }

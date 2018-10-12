@@ -45,43 +45,44 @@ typedef struct platform_list_head_t_ {
             (head)->next->prev = (head)->prev;                                 \
     } while (0)
 
-#define platform_listis_last(list, head) ((list) == (head)->next)
-#define platform_listis_empty(list) ((list)->next == (list))
+#define platform_list_is_last(list, head) ((list) == (head)->next)
+#define platform_list_is_empty(list) ((list)->next == (list))
 
 #define platform_list_insert_tail(list, head) platform_list_head_insert_prev(list, head)
 
 #define platform_list_first_entry(ptr, type, member)                                    \
     platform_list_head_data(type, member, (ptr)->next)
 
-#define platform_listfor_each(pos, list)                                               \
+#define platform_list_for_each(pos, list)                                               \
     for (pos = (list)->next; pos != (list); pos = pos->next)
 
-#define platform_listfor_each_prev(pos, list)                                          \
+#define platform_list_for_each_prev(pos, list)                                          \
     for (pos = (list)->prev; pos != (list); pos = pos->prev)
 
-#define platform_listfor_each_safe(pos, n, list)                                       \
+#define platform_list_for_each_safe(pos, n, list)                                       \
     for (pos = (list)->next, n = pos->next; pos != (list);                     \
          pos = n, n = pos->next)
 
-#define platform_listfor_each_prev_safe(pos, n, list)                                  \
+#define platform_list_for_each_prev_safe(pos, n, list)                                  \
     for (pos = (list)->prev, n = pos->prev; pos != (list);                     \
          pos = n, n = pos->prev)
 
 
-#define platform_listfor_each_entry(pos, list, type, member)                           \
+#define platform_list_for_each_entry(pos, list, type, member)                           \
     for ((pos) = platform_list_head_data(type, member, (list)->next);                   \
          &(pos)->member != (list);                                             \
          (pos) = platform_list_head_data(type, member, (pos)->member.next))
 
 
-#define platform_listfor_each_entry_reverse(pos, list, type, member)                   \
+#define platform_list_for_each_entry_reverse(pos, list, type, member)                   \
     for (pos = platform_list_head_data(type, member, (list)->prev);                     \
          &pos->member != (list);                                               \
          pos = platform_list_head_data(type, member, pos->member.prev))
 
-#define platform_listinit(list)                                                        \
+#define platform_list_init(list)                                                        \
     do {                                                                       \
         (list)->prev = list;                                                   \
         (list)->next = list;                                                   \
     } while (0)
 #endif
+

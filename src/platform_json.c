@@ -1,5 +1,7 @@
 #include "platform_json.h"
 #include <assert.h>
+#include <string.h>
+#include <stdio.h>
 void platform_json_parse_ws(platform_json_parser_t *parser) {
   while (*parser->curr == ' ' || *parser->curr == '\t' ||
          *parser->curr == '\n' || *parser->curr == '\r')
@@ -71,7 +73,7 @@ int platform_json_parse_bool(platform_json_base_t **b,
 int platform_json_parse_num(platform_json_base_t **b,
                             platform_json_parser_t *parser) {
   assert(parser);
-  platform_json_parse_ws(&parser);
+  platform_json_parse_ws(parser);
   int d;
   while (parser->curr <= (parser->str + parser->size)) {
     if (*parser->curr == '0') {

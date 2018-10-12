@@ -1,3 +1,4 @@
+#if 0
 #include "platform_ftp.h"
 #include "platform_network.h"
 
@@ -68,3 +69,5 @@ int platform_ftp_server_process(platform_ftp_server_t *server, int client_fd) {
     ++i;
   }
 }
+
+#endif

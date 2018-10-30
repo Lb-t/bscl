@@ -8,7 +8,7 @@
 #include <time.h>
 #define _TIMESPEC_DEFINED
 #include <pthread.h>
-
+#include <semaphore.h>
 typedef pthread_t platform_os_tid_t;
 
 struct platform_os_task_attr {

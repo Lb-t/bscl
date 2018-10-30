@@ -7,3 +7,6 @@
 #else
 #error "not support os"
 #endif
+
+typedef platform_os_sem_t platform_sem_t;
+typedef platform_os_mutex_t platform_mutex_t;

@@ -1,9 +1,7 @@
 #include "platform_bstree.h"
 
-platform_bstree_t *platform_bstree_new(void *data,
-                                       const platform_bstree_class_t *c) {
-  platform_bstree_t *item =
-      (platform_bstree_t *)malloc(sizeof(platform_bstree_t));
+platform_bstree_t *platform_bstree_new(void *data, const platform_bstree_class_t *c) {
+  platform_bstree_t *item = (platform_bstree_t *)malloc(sizeof(platform_bstree_t));
   if (item) {
     item->data = data;
     item->c = c;
@@ -18,8 +16,7 @@ void platform_bstree_insert(platform_bstree_t *this, void *data) {
   platform_assert(this);
   platform_assert(data);
   platform_bstree_t *temp = this;
-  platform_bstree_t *item =
-      (platform_bstree_t *)malloc(sizeof(platform_bstree_t));
+  platform_bstree_t *item = (platform_bstree_t *)malloc(sizeof(platform_bstree_t));
   assert(item);
   item->data = data;
   item->left = NULL;
@@ -114,8 +111,7 @@ platform_bstree_t *platform_bstree_successor(platform_bstree_t *tree) {
   return tree->parent;
 }
 
-static platform_bstree_t *platform_bstree_remove_item(platform_bstree_t *tree,
-                                                      platform_bstree_t *item) {
+static platform_bstree_t *platform_bstree_remove_item(platform_bstree_t *tree, platform_bstree_t *item) {
   platform_bstree_t *x;
   if (!item->left) {
     x = item->right;

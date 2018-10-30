@@ -4,8 +4,7 @@ const char *platform_http_method_str[] = {"GET", "HEAD"};
 const char platform_http_version_str[] = "HTTP/1.1\r\n";
 
 // return parsed len
-int platform_http_parser_header(char *buf, size_t len,
-                                platform_http_response_t *const response) {
+int platform_http_parser_header(char *buf, size_t len, platform_http_response_t *const response) {
   size_t remain_len = len;
   char *current_line = NULL;
   char *next_line = buf;
@@ -19,8 +18,7 @@ int platform_http_parser_header(char *buf, size_t len,
     current_line = next_line;
     // seek to next line
     unsigned int i = 0;
-    while ((i + 1) < remain_len &&
-           !(current_line[i] == '\r' && current_line[i + 1] == '\n')) {
+    while ((i + 1) < remain_len && !(current_line[i] == '\r' && current_line[i + 1] == '\n')) {
       ++i;
     }
     if (i == 0) {
@@ -34,14 +32,12 @@ int platform_http_parser_header(char *buf, size_t len,
       remain_len = remain_len - i - 2;
     } else {
       // not a full line
-      fprintf(stderr, "not a full line i=%d len=%d remain=%d\n", i, len,
-              remain_len);
+      fprintf(stderr, "not a full line i=%d len=%d remain=%d\n", i, len, remain_len);
       return len - remain_len;
     }
 
     if (strstr(current_line, "Content-Length:") == current_line) {
-      if (sscanf(current_line + sizeof("Content-Length:") - 1, "%d",
-                 &response->content_length) > 0) {
+      if (sscanf(current_line + sizeof("Content-Length:") - 1, "%d", &response->content_length) > 0) {
         printf("Content-Length=%d\n", response->content_length);
       }
       continue;
@@ -79,21 +75,16 @@ int platform_http_parser_header(char *buf, size_t len,
   return len - remain_len;
 }
 
-void platform_http_client_request(platform_http_client_t *client,
-                                  const char *url,
-                                  const Platform_Http_Method method,
-                                  const char *heads, char *body,
-                                  platform_http_response_t *const response) {
+void platform_http_client_request(platform_http_client_t *client, const char *url, const Platform_Http_Method method,
+                                  const char *heads, char *body, platform_http_response_t *const response) {
   int res;
-  res = platform_tcp_write(client->fd, platform_http_method_str[method],
-                           strlen(platform_http_method_str[method]));
+  res = platform_tcp_write(client->fd, platform_http_method_str[method], strlen(platform_http_method_str[method]));
 
   res = platform_tcp_write(client->fd, " ", 1);
 
   res = platform_tcp_write(client->fd, url, strlen(url));
   res = platform_tcp_write(client->fd, " ", 1);
-  res = platform_tcp_write(client->fd, platform_http_version_str,
-                           strlen(platform_http_version_str));
+  res = platform_tcp_write(client->fd, platform_http_version_str, strlen(platform_http_version_str));
 
   res = platform_tcp_write(client->fd, heads, strlen(heads));
   FILE *fp = fopen("test_http.txt", "w+");
@@ -107,16 +98,14 @@ void platform_http_client_request(platform_http_client_t *client,
       return;
     }
 
-    res = platform_tcp_read(client->fd, recv_buf,
-                            PLATFORM_HTTP_BUF_SIZE - (recv_buf - client->buf));
+    res = platform_tcp_read(client->fd, recv_buf, PLATFORM_HTTP_BUF_SIZE - (recv_buf - client->buf));
 
     if (res <= 0) {
       return;
     } else {
       fwrite(recv_buf, 1, res, fp);
       recv_buf += res;
-      res = platform_http_parser_header(parse_buf, recv_buf - parse_buf,
-                                        response);
+      res = platform_http_parser_header(parse_buf, recv_buf - parse_buf, response);
       parse_buf += res;
     }
   } while (!response->completed_head);

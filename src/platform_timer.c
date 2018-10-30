@@ -14,8 +14,7 @@ static void (*platform_time_callback)(void *);
 static void *platform_timer_callbackData = NULL;
 
 #ifdef _WIN32
-void CALLBACK platform_timer_on(UINT uTimerID, UINT uMsg, DWORD_PTR dwUser,
-                                DWORD_PTR dw1, DWORD_PTR dw2)
+void CALLBACK platform_timer_on(UINT uTimerID, UINT uMsg, DWORD_PTR dwUser, DWORD_PTR dw1, DWORD_PTR dw2)
 #else
 static platform_timer_t *platform_timer_start = NULL;
 void platform_timer_on(int arg)
@@ -43,18 +42,15 @@ void platform_timer_on(int arg)
 #endif
 }
 
-platform_timer_t *platform_timer_new(void (*callback)(void *), uint16_t ms,
-                                     void *data) {
+platform_timer_t *platform_timer_new(void (*callback)(void *), uint16_t ms, void *data) {
   platform_assert(callback);
   platform_assert(ms);
-  platform_timer_t *timer =
-      (platform_timer_t *)malloc(sizeof(platform_timer_t));
+  platform_timer_t *timer = (platform_timer_t *)malloc(sizeof(platform_timer_t));
   timer->callback = callback;
   timer->data = data;
 
 #ifdef _WIN32
-  timer->id = timeSetEvent(ms, 0, platform_timer_on, (DWORD_PTR)timer,
-                           TIME_PERIODIC | TIME_KILL_SYNCHRONOUS);
+  timer->id = timeSetEvent(ms, 0, platform_timer_on, (DWORD_PTR)timer, TIME_PERIODIC | TIME_KILL_SYNCHRONOUS);
 #else
   timer->ms = ms;
   if (!platform_timer_start) {
@@ -73,8 +69,7 @@ platform_timer_t *platform_timer_new(void (*callback)(void *), uint16_t ms,
     }
     platform_timer_start = timer;
   } else {
-    platform_list_head_insert_prev((platform_list_head_t *)platform_timer_start,
-                                   (platform_list_head_t *)timer);
+    platform_list_head_insert_prev((platform_list_head_t *)platform_timer_start, (platform_list_head_t *)timer);
   }
 #endif
   return timer;
@@ -91,8 +86,7 @@ void platform_timer_delete(platform_timer_t *this) {
       if (platform_timer_start = this) {
         h = platform_list_head_next(&this->list_head);
         if (h) {
-          platform_timer_start =
-              platform_list_head_data(platform_timer_t, list_head, h);
+          platform_timer_start = platform_list_head_data(platform_timer_t, list_head, h);
         } else {
           platform_timer_start = NULL;
         }

@@ -4,12 +4,10 @@
 #include <stddef.h>
 
 /*create a new vector with given initial size and value*/
-platform_vector_t *platform_vector_new(size_t initial_size, void *initial_value,
-                                       size_t type_size) {
+platform_vector_t *platform_vector_new(size_t initial_size, void *initial_value, size_t type_size) {
   platform_assert(type_size);
   platform_assert(!initial_size || initial_value);
-  platform_vector_t *vector =
-      (platform_vector_t *)malloc(sizeof(platform_vector_t));
+  platform_vector_t *vector = (platform_vector_t *)malloc(sizeof(platform_vector_t));
   if (!vector) {
     return NULL;
   }
@@ -55,17 +53,14 @@ void platform_vector_get(platform_vector_t const *this, size_t start,
          this->type_size * count);
 }
 #endif
-void platform_vector_set(platform_vector_t *this, size_t start, size_t count,
-                         void const *data) {
+void platform_vector_set(platform_vector_t *this, size_t start, size_t count, void const *data) {
   platform_assert(this);
   platform_assert(count);
   platform_assert(start + count <= this->size);
-  memcpy((char *)this->data + start * this->type_size, data,
-         this->type_size * count);
+  memcpy((char *)this->data + start * this->type_size, data, this->type_size * count);
 }
 
-void platform_vector_insert(platform_vector_t *this, size_t index, size_t count,
-                            void const *data) {
+void platform_vector_insert(platform_vector_t *this, size_t index, size_t count, void const *data) {
   platform_assert(this);
   platform_assert(data);
   platform_assert(count);
@@ -99,23 +94,19 @@ void platform_vector_insert(platform_vector_t *this, size_t index, size_t count,
 
   // platform_assert(this->capacity * this->type_size <= _msize(this->data));
   platform_assert(index + count <= this->capacity);
-  memmove((char *)this->data + (index + count) * this->type_size,
-          (char *)this->data + index * this->type_size,
+  memmove((char *)this->data + (index + count) * this->type_size, (char *)this->data + index * this->type_size,
           (this->size - index) * this->type_size);
-  memcpy((char *)this->data + index * this->type_size, data,
-         count * this->type_size);
+  memcpy((char *)this->data + index * this->type_size, data, count * this->type_size);
 
   this->size += count;
 }
 
-void platform_vector_remove(platform_vector_t *this, size_t index,
-                            size_t count) {
+void platform_vector_remove(platform_vector_t *this, size_t index, size_t count) {
   platform_assert(this);
   platform_assert(count);
   platform_assert(index + count <= this->size);
   // printf("remove capacity=%d size=%d \n", this->capacity, this->size);
-  memmove((char *)this->data + index * this->type_size,
-          (char *)this->data + (index + count) * this->type_size,
+  memmove((char *)this->data + index * this->type_size, (char *)this->data + (index + count) * this->type_size,
           (this->size - index - count) * this->type_size);
   this->size -= count;
   if (this->size < (this->capacity >> 1)) {

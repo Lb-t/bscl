@@ -8,7 +8,7 @@
 #include <time.h>
 #define _TIMESPEC_DEFINED
 #include <pthread.h>
-
+#include <semaphore.h>
 typedef pthread_t platform_os_tid_t;
 
 struct platform_os_task_attr {
@@ -47,10 +47,10 @@ static inline int platform_os_mutex_timedlock(platform_os_mutex_t *mutex, unsign
 /*sem*/
 typedef sem_t platform_os_sem_t;
 
-#define platform_os_sem_create(sem,value)
-#define platform_os_sem_post(sem)
-#define platform_os_sem_wait(sem)
-#define platform_os_sem_trywait(sem)
+#define platform_os_sem_create(sem,value) sem_init(sem,0,value)
+#define platform_os_sem_post(sem) sem_post(sem)
+#define platform_os_sem_wait(sem)  sem_wait(sem)
+#define platform_os_sem_trywait(sem)  sem_trywait(sem)
 #define platform_os_sem_timedwait(sem,timeout)
 #define platform_os_sem_delete(sem)
 
@@ -81,14 +81,16 @@ static inline int platform_os_mutex_timedlock(platform_os_mutex_t *mutex, unsign
 #define platform_os_mutex_delete(mutex) _Mtx_destroy(*mutex)
 
 /*sem*/
-typedef void*  platform_os_sem_t;
+typedef struct platform_os_sem_win32_t_* platform_os_sem_t;
 
-#define platform_os_sem_create(sem,value)
-#define platform_os_sem_post(sem)
-#define platform_os_sem_wait(sem)
-#define platform_os_sem_trywait(sem)
-#define platform_os_sem_timedwait(sem,timeout)
-#define platform_os_sem_delete(sem)
+int platform_os_sem_create(platform_os_sem_t *sem, const char cname[4], unsigned int value);
+int platform_os_sem_post(platform_os_sem_t *sem);
+int platform_os_sem_post_isr(platform_os_sem_t *sem);
+int platform_os_sem_flush(platform_os_sem_t *sem);
+int platform_os_sem_wait(platform_os_sem_t *sem);
+int platform_os_sem_trywait(platform_os_sem_t *sem);
+int platform_os_sem_timedwait(platform_os_sem_t *sem, unsigned int timeout_ms);
+void platform_os_sem_delete(platform_os_sem_t *sem);
 
 #else 
 #error not supported compiler

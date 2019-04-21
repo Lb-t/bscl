@@ -1,4 +1,4 @@
-#include "platform_network.h"
+#include "bscl_network.h"
 #define BUF_SIZE 1024
 char status[] = "HTTP/1.0 200 OK\r\n";
 char header[] =
@@ -7,25 +7,25 @@ char body[] = "<html><head><title>A Simple Web "
               "Server</title></head><body><h2>Welcome!</h2><p>This is "
               "a simple test server!</p></body></html>";
 int main(void) {
-  int fd = platform_tcp_new(8080);
-  platform_tcp_listen(fd);
+  int fd = bscl_tcp_new(8080);
+  bscl_tcp_listen(fd);
   static char buf[BUF_SIZE];
   uint32_t ip;
   uint16_t port;
   while (1) {
-    int client = platform_tcp_accept(fd, &ip, &port);
+    int client = bscl_tcp_accept(fd, &ip, &port);
     while (1) {
-      int res = platform_tcp_read(client, buf, BUF_SIZE);
+      int res = bscl_tcp_read(client, buf, BUF_SIZE);
       if (res <= 0) {
         break;
       }
-       res=platform_tcp_write(client, status, sizeof(status));
+       res=bscl_tcp_write(client, status, sizeof(status));
 	  if (res < 0)
 		  printf("res=%d\n", res);
-      res=platform_tcp_write(client, header, sizeof(header));
+      res=bscl_tcp_write(client, header, sizeof(header));
 	  if (res < 0)
 		  printf("res=%d\n", res);
-     res= platform_tcp_write(client, body, sizeof(body));
+     res= bscl_tcp_write(client, body, sizeof(body));
 	 if (res < 0)
 		 printf("res=%d\n", res);
     }

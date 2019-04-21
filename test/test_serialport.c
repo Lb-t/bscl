@@ -1,6 +1,6 @@
-#include "platform_serialport.h"
+#include "bscl_serialport.h"
 #include <stdio.h>
-#include "platform_os.h"
+#include "bscl_os.h"
 #include <string.h>
 #if 0
 int b = 0;
@@ -12,7 +12,7 @@ void *recv_task(void*arg) {
 	char c;
 	memcpy(&fd, arg, sizeof(int));
 	while (1) {
-		int res = platform_serialport_read(fd, &c, 1);
+		int res = bscl_serialport_read(fd, &c, 1);
 		if (res < 0) {
 			break;
 		}
@@ -22,21 +22,21 @@ void *recv_task(void*arg) {
 }
 int main(void) {
 	char buf[1024];
-	int fd = platform_serialport_open("COM3");
-	platform_os_tid_t recv_tid;
+	int fd = bscl_serialport_open("COM3");
+	bscl_os_tid_t recv_tid;
 	if (fd < 0)
 	{
 		return -1;
 	}
-	platform_serialport_config_t conf = {
+	bscl_serialport_config_t conf = {
 		.baudrate = 115200,
-		.parity = PLATFORM_SERIALPORT_PARITY_NONE, .stopbits = PLATFORM_SERIALPORT_STOPBITS_1
+		.parity = BSCL_SERIALPORT_PARITY_NONE, .stopbits = BSCL_SERIALPORT_STOPBITS_1
 	};
-	platform_serialport_config(fd, &conf);
-	platform_os_task_create(&recv_tid, NULL, recv_task, &fd);
+	bscl_serialport_config(fd, &conf);
+	bscl_os_task_create(&recv_tid, NULL, recv_task, &fd);
 	while (1) {
 		fgets(buf, 1024, stdin);
-		int res = platform_serialport_write(fd, buf, strlen(buf));
+		int res = bscl_serialport_write(fd, buf, strlen(buf));
 		if (res < 0) {
 			break;
 		}

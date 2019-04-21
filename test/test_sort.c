@@ -1,4 +1,4 @@
-#include "platform_sort.h"
+#include "bscl_sort.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
@@ -31,8 +31,8 @@ int main(void){
     printf("%d ", a[i]);
   }
   printf("\n");
-  const platform_sort_container_if_t int_if = {.size = sizeof(int), .compare = compare, .at = at};
-  platform_qsort(a, 0, LEN - 1, &int_if, NULL);
+  const bscl_sort_container_if_t int_if = {.size = sizeof(int), .compare = compare, .at = at};
+  bscl_qsort(a, 0, LEN - 1, &int_if, NULL);
     for(int i=0;i<sizeof(a)/sizeof(int);++i){
         printf("%d ",a[i]);
     }

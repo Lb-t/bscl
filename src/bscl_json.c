@@ -3,6 +3,7 @@
 #include <errno.h>
 #include <stdio.h>
 #include <string.h>
+#include "bscl_list_head.h"
 
 static void bscl_json_parse_ws(bscl_json_parser_t *parser) {
   while (*parser->curr == ' ' || *parser->curr == '\t' || *parser->curr == '\n' || *parser->curr == '\r')
@@ -112,7 +113,7 @@ static int bscl_json_parse_object(bscl_json_base_t **b, bscl_json_parser_t *pars
   bscl_json_object_t *obj = (bscl_json_object_t *)malloc(sizeof(bscl_json_object_t));
   parse_state_t state = PARSE_WAIT_KEY_START;
   obj->base.type = JSON_OBJ;
-  list_init(&obj->contents);
+  bscl_list_init(&obj->contents);
 
   const char *key_begin = NULL;
   bscl_json_pair_t *pair;
@@ -157,7 +158,7 @@ static int bscl_json_parse_object(bscl_json_base_t **b, bscl_json_parser_t *pars
           return res;
         }
 
-        list_insert_tail(&obj->contents, &pair->head);
+        bscl_list_insert_tail(&obj->contents, &pair->head);
         state = PARSE_WAIT_END;
       } else {
         // error
@@ -191,7 +192,7 @@ static int bscl_json_parse_array(bscl_json_base_t **b, bscl_json_parser_t *parse
 
   bscl_json_array_t *array = (bscl_json_array_t *)malloc(sizeof(bscl_json_array_t));
   array->base.type = JSON_ARRAY;
-  list_init(&array->contents);
+  bscl_list_init(&array->contents);
   bscl_json_base_t *base;
   while (parser->curr < parser->str + parser->size) {
     int res = bscl_json_parse(&base, parser);
@@ -208,7 +209,7 @@ static int bscl_json_parse_array(bscl_json_base_t **b, bscl_json_parser_t *parse
       free(array);
       return JSON_PARSE_INVALID_VALUE;
     }
-    *parser->curr++;
+    parser->curr++;
   }
   return JSON_PARSE_INVALID_VALUE;
 }

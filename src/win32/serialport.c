@@ -1,5 +1,5 @@
 #include <windows.h>
-#include "platform_serialport.h"
+#include "bscl_serialport.h"
 #include <assert.h>
 #include <string.h>
 #include <stdio.h>
@@ -7,55 +7,55 @@
 #define MAX_OPEN_NUM 8
 
 #pragma comment(lib, "legacy_stdio_definitions.lib")
-struct platform_serialport_t_
+struct bscl_serialport_t_
 {
 	HANDLE hComm;
 };
 
 typedef struct
 {
-	platform_serialport_t *port[MAX_OPEN_NUM];
-} platform_serialport_mgr_t;
+	bscl_serialport_t *port[MAX_OPEN_NUM];
+} bscl_serialport_mgr_t;
 
-static platform_serialport_mgr_t sp;
+static bscl_serialport_mgr_t sp;
 
 typedef struct {
 	HKEY key;
 	int index;
-}platform_serialport_reg_t;
+}bscl_serialport_reg_t;
 
-int platform_serialport_list_begin(void ** sp_list)
+int bscl_serialport_list_begin(void ** sp_list)
 {
-	platform_serialport_reg_t *reg=malloc(sizeof(platform_serialport_reg_t));
+	bscl_serialport_reg_t *reg=malloc(sizeof(bscl_serialport_reg_t));
 	int ret;
 	if (!reg) {
-          return PLATFORM_SERIALPORT_EMEM;
+          return BSCL_SERIALPORT_EMEM;
 	}
 	ret = RegOpenKeyEx(HKEY_LOCAL_MACHINE,"HARDWARE\\DEVICEMAP\\SERIALCOMM",
 		0, KEY_QUERY_VALUE, &reg->key);
 	if (ret != ERROR_SUCCESS) {
-          return PLATFORM_SERIALPORT_EFAIL;
+          return BSCL_SERIALPORT_EFAIL;
 	}
 	reg->index = 0;
 	*sp_list = reg;
 	return 0;
 }
-int platform_serialport_list_next(void * sp_list, char * name, int len)
+int bscl_serialport_list_next(void * sp_list, char * name, int len)
 {
-	platform_serialport_reg_t *reg = sp_list;
+	bscl_serialport_reg_t *reg = sp_list;
 	char value_name[20];
 	int value_len = 20;
 	int ret=RegEnumValue(reg->key, reg->index, value_name, &value_len,
 		NULL, NULL, (LPBYTE)name, &len);
 	if (ret != ERROR_SUCCESS) {
-          return PLATFORM_SERIALPORT_EFAIL;
+          return BSCL_SERIALPORT_EFAIL;
 	}
 	++reg->index;
 	return 0;
 }
-int platform_serialport_list_end(void * sp_list)
+int bscl_serialport_list_end(void * sp_list)
 {
-	platform_serialport_reg_t *reg = sp_list;
+	bscl_serialport_reg_t *reg = sp_list;
 	RegCloseKey(reg->key);
 	free(reg);
 	return 0;
@@ -74,7 +74,7 @@ static int get_free_fd(void)
 }
 
 
-int platform_serialport_open(const char *name)
+int bscl_serialport_open(const char *name)
 {
 	HANDLE hComm;
 	int fd = get_free_fd();
@@ -93,26 +93,26 @@ int platform_serialport_open(const char *name)
 		0);
 	if (hComm == INVALID_HANDLE_VALUE)
 	{
-		return PLATFORM_SERIALPORT_EFAIL;
+		return BSCL_SERIALPORT_EFAIL;
 	}
-	sp.port[fd] = (platform_serialport_t *)malloc(sizeof(platform_serialport_t));
+	sp.port[fd] = (bscl_serialport_t *)malloc(sizeof(bscl_serialport_t));
 	sp.port[fd]->hComm = hComm;
 	if (!sp.port[fd])
 	{
-		return PLATFORM_SERIALPORT_EMEM;
+		return BSCL_SERIALPORT_EMEM;
 	}
 	return fd;
 }
 
-int platform_serialport_read(int fd, void *buf, int len)
+int bscl_serialport_read(int fd, void *buf, int len)
 {
 	assert(fd >= 0);
 	assert(buf);
 	assert(len);
-	platform_serialport_t *port = sp.port[fd];
+	bscl_serialport_t *port = sp.port[fd];
 	if (!port)
 	{
-		return PLATFORM_SERIALPORT_EARG;
+		return BSCL_SERIALPORT_EARG;
 	}
 	HANDLE hComm = port->hComm;
 	DWORD dwRead;
@@ -125,7 +125,7 @@ int platform_serialport_read(int fd, void *buf, int len)
 	if (osReader.hEvent == NULL)
 	{
 		// Error creating overlapped event; abort.
-		return PLATFORM_SERIALPORT_EFAIL;
+		return BSCL_SERIALPORT_EFAIL;
 	}
 
 
@@ -134,7 +134,7 @@ int platform_serialport_read(int fd, void *buf, int len)
 	{
 		if (GetLastError() != ERROR_IO_PENDING) // read not delayed?
 		{                                       // Error in communications; report it.
-			return PLATFORM_SERIALPORT_EFAIL;
+			return BSCL_SERIALPORT_EFAIL;
 		}
 	}
 	else
@@ -179,15 +179,15 @@ int platform_serialport_read(int fd, void *buf, int len)
 	return 0;
 }
 
-int platform_serialport_write(int fd, void *buf, int len)
+int bscl_serialport_write(int fd, void *buf, int len)
 {
 	assert(fd >= 0);
 	assert(buf);
 	assert(len);
-	platform_serialport_t *port = sp.port[fd];
+	bscl_serialport_t *port = sp.port[fd];
 	if (!port)
 	{
-		return PLATFORM_SERIALPORT_EARG;
+		return BSCL_SERIALPORT_EARG;
 	}
 	HANDLE hComm = port->hComm;
 	OVERLAPPED osWrite = { 0 };
@@ -199,7 +199,7 @@ int platform_serialport_write(int fd, void *buf, int len)
 	osWrite.hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
 	if (osWrite.hEvent == NULL)
 	{
-		return PLATFORM_SERIALPORT_EFAIL;
+		return BSCL_SERIALPORT_EFAIL;
 	}
 	// Issue write.
 	if (!WriteFile(hComm, buf, len, &dwWritten, &osWrite))
@@ -246,45 +246,45 @@ int platform_serialport_write(int fd, void *buf, int len)
 	}
 }
 
-int platform_serialport_close(int fd)
+int bscl_serialport_close(int fd)
 {
 	assert(fd >= 0);
-	platform_serialport_t *port = sp.port[fd];
+	bscl_serialport_t *port = sp.port[fd];
 	if (!port) {
-		return PLATFORM_SERIALPORT_EARG;
+		return BSCL_SERIALPORT_EARG;
 	}
 	HANDLE hComm = port->hComm;
 	CloseHandle(hComm);
 	return 0;
 }
 
-int platform_serialport_config(int fd, platform_serialport_config_t *conf)
+int bscl_serialport_config(int fd, bscl_serialport_config_t *conf)
 {
 	assert(fd >= 0);
 	assert(conf);
-	platform_serialport_t *port = sp.port[fd];
+	bscl_serialport_t *port = sp.port[fd];
 	if (!port)
 	{
-		return PLATFORM_SERIALPORT_EARG;
+		return BSCL_SERIALPORT_EARG;
 	}
 	HANDLE hComm = port->hComm;
 	DCB dcb = { 0 };
 	if (!GetCommState(hComm, &dcb)) {
-		return PLATFORM_SERIALPORT_EFAIL;
+		return BSCL_SERIALPORT_EFAIL;
 	}
 	else {
 		// DCB is ready for use.
 		dcb.BaudRate = conf->baudrate;
-		if (conf->parity == PLATFORM_SERIALPORT_PARITY_NONE) {
+		if (conf->parity == BSCL_SERIALPORT_PARITY_NONE) {
 			dcb.fParity = FALSE;
 			dcb.Parity = NOPARITY;
 		}
 		else {
 			dcb.fParity = TRUE;
-			if (conf->parity == PLATFORM_SERIALPORT_PARITY_EVEN) {
+			if (conf->parity == BSCL_SERIALPORT_PARITY_EVEN) {
 				dcb.Parity = EVENPARITY;
 			}
-			else if (PLATFORM_SERIALPORT_PARITY_ODD) {
+			else if (BSCL_SERIALPORT_PARITY_ODD) {
 				dcb.Parity = ODDPARITY;
 			}
 			else {
@@ -303,7 +303,7 @@ int platform_serialport_config(int fd, platform_serialport_config_t *conf)
 		dcb.fRtsControl = RTS_CONTROL_DISABLE;
 
 		if (!SetCommState(hComm, &dcb)) {
-			return PLATFORM_SERIALPORT_EFAIL;
+			return BSCL_SERIALPORT_EFAIL;
 		}
 	}
 	return 0;

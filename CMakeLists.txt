@@ -47,3 +47,7 @@ target_link_libraries(test_network bscl)
 
 add_executable(test_sort ${CMAKE_SOURCE_DIR}/test/test_sort.c ${CMAKE_SOURCE_DIR}/src/bscl_sort.c)
 
+
+add_executable(test_getopt ${CMAKE_SOURCE_DIR}/test/test_getopt.c)
+target_link_libraries(test_getopt bscl)
+

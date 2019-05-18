@@ -1,5 +1,6 @@
-#include "bscl_timer.h"
+#include "bscl_os.h"
 #include "bscl_common.h"
+#include "bscl_list_head.h"
 
 #ifdef _WIN32
 #include <windows.h>
@@ -9,6 +10,12 @@
 #include <signal.h>
 #include <stdio.h>
 #include <sys/time.h>
+struct bscl_os_timer_t_ {
+  bscl_list_head_t list_head;
+  unsigned int ms;
+  void (*callback)(void *);
+  void *data;
+};
 #endif
 static void (*bscl_time_callback)(void *);
 static void *bscl_timer_callbackData = NULL;

@@ -53,10 +53,10 @@ void *test_tcp_server(void *arg) {
     fd = bscl_tcp_accept(tcpServer, &ip, &port);
     printf("new connection ip=%d.%d.%d.%d,port=%d fd=%d\n", ((uint8_t *)&ip)[0], ((uint8_t *)&ip)[1], ((uint8_t *)&ip)[2],
            ((uint8_t *)&ip)[3], ntohs(port), fd);
-    bscl_os_tid_t tid;
+    bscl_os_thread_t tid;
     int *arg = malloc(sizeof(int));
     *arg = fd;
-    bscl_os_task_create(&tid, NULL, test_tcp_server_conn, arg);
+    bscl_os_thread_create(&tid, NULL, test_tcp_server_conn, arg);
   }
 }
 
@@ -84,11 +84,11 @@ void *test_tcp_client(void *arg) {
 }
 
 int main(int argc, char *argv[]) {
-  bscl_os_tid_t tid;
+  bscl_os_thread_t tid;
   puts("test");
-  bscl_os_task_create(&tid, NULL, test_udp, NULL);
-  bscl_os_task_create(&tid, NULL, test_tcp_server, NULL);
-  bscl_os_task_create(&tid, NULL, test_tcp_client, NULL);
+  bscl_os_thread_create(&tid, NULL, test_udp, NULL);
+  bscl_os_thread_create(&tid, NULL, test_tcp_server, NULL);
+  bscl_os_thread_create(&tid, NULL, test_tcp_client, NULL);
   void *retval;
-  bscl_os_task_join(tid, &retval);
+  bscl_os_thread_join(tid, &retval);
 }

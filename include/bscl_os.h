@@ -15,11 +15,17 @@
 #include "./win32/time.h"
 #include "./win32/timer.h"
 #elif defined(__APPLE__)
-#include "darwin/bscl_os_darwin.h"
+#include "./apple/mutex.h"
+#include "./apple/process.h"
+#include "./apple/sem.h"
+#include "./apple/thread.h"
+#include "./apple/time.h"
+#include "./apple/timer.h"
 #else
 #error "not support os"
 #endif
 
+typedef bscl_os_timer_t bscl_timer_t;
 typedef bscl_os_sem_t bscl_sem_t;
 typedef bscl_os_mutex_t bscl_mutex_t;
 typedef bscl_os_thread_t bscl_thread_t;

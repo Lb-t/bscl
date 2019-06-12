@@ -2,11 +2,6 @@
 #include "bscl_common.h"
 #include "bscl_list_head.h"
 
-#ifdef _WIN32
-#include <windows.h>
-//#include <mmsystem.h>
-//#pragma comment(lib, "Winmm.lib")
-#else
 #include <signal.h>
 #include <stdio.h>
 #include <sys/time.h>
@@ -16,22 +11,13 @@ struct bscl_os_timer_t_ {
   void (*callback)(void *);
   void *data;
 };
-#endif
 static void (*bscl_time_callback)(void *);
 static void *bscl_timer_callbackData = NULL;
 
-#ifdef _WIN32
-void CALLBACK bscl_timer_on(UINT uTimerID, UINT uMsg, DWORD_PTR dwUser, DWORD_PTR dw1, DWORD_PTR dw2)
-#else
 static bscl_timer_t *bscl_timer_start = NULL;
-void bscl_timer_on(int arg)
-#endif
-{
+void bscl_timer_on(int arg) {
   bscl_timer_t *timer;
-#ifdef _WIN32
-  timer = (bscl_timer_t *)dwUser;
-  timer->callback(timer->data);
-#else
+
   static unsigned int count = 0;
   timer = bscl_timer_start;
   while (timer) {
@@ -46,7 +32,6 @@ void bscl_timer_on(int arg)
     }
   }
   count++;
-#endif
 }
 
 bscl_timer_t *bscl_timer_new(void (*callback)(void *), uint16_t ms, void *data) {
@@ -56,9 +41,6 @@ bscl_timer_t *bscl_timer_new(void (*callback)(void *), uint16_t ms, void *data) 
   timer->callback = callback;
   timer->data = data;
 
-#ifdef _WIN32
-  timer->id = timeSetEvent(ms, 0, bscl_timer_on, (DWORD_PTR)timer, TIME_PERIODIC | TIME_KILL_SYNCHRONOUS);
-#else
   timer->ms = ms;
   if (!bscl_timer_start) {
 
@@ -78,14 +60,10 @@ bscl_timer_t *bscl_timer_new(void (*callback)(void *), uint16_t ms, void *data) 
   } else {
     bscl_list_head_insert_prev((bscl_list_head_t *)bscl_timer_start, (bscl_list_head_t *)timer);
   }
-#endif
   return timer;
 }
 
 void bscl_timer_delete(bscl_timer_t *this) {
-#ifdef _WIN32
-  timeKillEvent(this->id);
-#else
   bscl_timer_t *timer = bscl_timer_start;
   bscl_list_head_t *h;
   while (timer) {
@@ -115,6 +93,5 @@ void bscl_timer_delete(bscl_timer_t *this) {
     tick.it_interval.tv_usec = 0;
     setitimer(ITIMER_REAL, &tick, NULL);
   }
-#endif
   free(this);
 }

@@ -1,5 +1,6 @@
 #include "bscl_bstree.h"
 #include <stdio.h>
+#include <inttypes.h>
 int compare(void *d1, void *d2) {
   int v1 = *(int *)d1;
   int v2 = *(int *)d2;
@@ -30,7 +31,7 @@ int main(void) {
     value = malloc(sizeof(int));
 
     *value = rand() % 50;
-    printf("for %d %d \n", *value, value);
+    printf("for %d %" PRIxPTR " \n", *value,(intptr_t) value);
     fflush(stdout);
     bscl_bstree_insert(tree, value);
   }

@@ -38,7 +38,7 @@ void bscl_network_get_local_ip(void) {
       bOpt = true;
   setsockopt(fd, SOL_SOCKET, SO_BROADCAST, &bOpt, sizeof(bOpt));
 
-  int fromlen = sizeof(addr);
+  socklen_t fromlen = sizeof(addr);
   if (getsockname(fd, (struct sockaddr *)&addr, &fromlen)) {
 #ifndef NODEBUG
     fprintf(stderr, "getsockname failed.\n");
@@ -169,7 +169,7 @@ int bscl_tcp_new(const uint16_t port) {
 int bscl_udp_receive(const int fd, void *const data, const int len,
                          uint32_t *const ip, uint16_t *const port) {
   struct sockaddr_in addr;
-  int fromlen = sizeof(addr);
+  socklen_t fromlen = sizeof(addr);
   int res;
   do {
     res = recvfrom(fd, data, len, 0, (struct sockaddr *)&addr, &fromlen);
@@ -182,7 +182,7 @@ int bscl_udp_receive(const int fd, void *const data, const int len,
 int bscl_tcp_accept(const int fp, uint32_t *const ip,
                         uint16_t *const port) {
   struct sockaddr_in addr;
-  int addrlen = sizeof(struct sockaddr_in);
+  socklen_t addrlen = sizeof(struct sockaddr_in);
   int res = accept(fp, (struct sockaddr *)&addr, &addrlen);
   *ip = addr.sin_addr.s_addr;
   *port = ntohs(addr.sin_port);

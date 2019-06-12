@@ -83,7 +83,7 @@ void bscl_timer_delete(bscl_timer_t *this) {
   bscl_list_head_t *h;
   while (timer) {
     if (timer == this) {
-      if (bscl_timer_start = this) {
+      if (bscl_timer_start == this) {
         h = bscl_list_head_next(&this->list_head);
         if (h) {
           bscl_timer_start = bscl_list_head_data(bscl_timer_t, list_head, h);

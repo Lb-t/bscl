@@ -1,5 +1,5 @@
 #include "bscl_http.h"
-
+#include <stdlib.h>
 const char *bscl_http_method_str[] = {"GET", "HEAD"};
 const char bscl_http_version_str[] = "HTTP/1.1\r\n";
 
@@ -32,7 +32,7 @@ int bscl_http_parser_header(char *buf, size_t len, bscl_http_response_t *const r
       remain_len = remain_len - i - 2;
     } else {
       // not a full line
-      fprintf(stderr, "not a full line i=%d len=%d remain=%d\n", i, len, remain_len);
+      fprintf(stderr, "not a full line i=%d len=%zu remain=%zu\n", i, len, remain_len);
       return len - remain_len;
     }
 

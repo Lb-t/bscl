@@ -3,6 +3,7 @@
 #include <errno.h>
 #include <stdio.h>
 #include <string.h>
+#include "bscl_list_head.h"
 
 static void bscl_json_parse_ws(bscl_json_parser_t *parser) {
   while (*parser->curr == ' ' || *parser->curr == '\t' || *parser->curr == '\n' || *parser->curr == '\r')
@@ -208,7 +209,7 @@ static int bscl_json_parse_array(bscl_json_base_t **b, bscl_json_parser_t *parse
       free(array);
       return JSON_PARSE_INVALID_VALUE;
     }
-    *parser->curr++;
+    parser->curr++;
   }
   return JSON_PARSE_INVALID_VALUE;
 }

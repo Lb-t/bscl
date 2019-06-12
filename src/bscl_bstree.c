@@ -151,7 +151,7 @@ static bscl_bstree_t *bscl_bstree_remove_item(bscl_bstree_t *tree, bscl_bstree_t
 
 bscl_bstree_t *bscl_bstree_remove(bscl_bstree_t *tree, void *data) {
   bscl_bstree_t *temp;
-  while (temp = bscl_bstree_find(tree, data)) {
+  while ((temp = bscl_bstree_find(tree, data))) {
     tree = bscl_bstree_remove_item(tree, temp);
   }
   return tree;

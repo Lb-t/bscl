@@ -25,7 +25,7 @@
 #define S43 15
 #define S44 21
 
-static void _bscl_md5_Transform(unsigned int[4], const uint8_t[64]);
+static void md5_Transform(unsigned int[4], const uint8_t[64]);
 static void _Encode(uint8_t *, unsigned int *, unsigned int);
 static void _Decode(unsigned int *, const uint8_t *, unsigned int);
 
@@ -81,7 +81,7 @@ void bscl_md5_init(bscl_md5_context_t *context) {
 
 /* bscl_md5_ block update operation. Continues an bscl_md5_ message-digest operation,
    processing another message block, and updating the context. */
-void bscl_md5_update(bscl_md5_context_t *context, const uint8_t *input, unsigned int inputLen) {
+void bscl_md5_accumulate(bscl_md5_context_t *context, const uint8_t *input, unsigned int inputLen) {
   unsigned int i, index, partLen;
 
   /* Compute number of bytes mod 64 */
@@ -97,10 +97,10 @@ void bscl_md5_update(bscl_md5_context_t *context, const uint8_t *input, unsigned
   /* Transform as many times as possible. */
   if (inputLen >= partLen) {
     memcpy((void *)&context->buffer[index], (void *)input, partLen);
-    _bscl_md5_Transform(context->state, context->buffer);
+    md5_Transform(context->state, context->buffer);
 
     for (i = partLen; i + 63 < inputLen; i += 64)
-      _bscl_md5_Transform(context->state, &input[i]);
+      md5_Transform(context->state, &input[i]);
 
     index = 0;
   } else
@@ -111,7 +111,7 @@ void bscl_md5_update(bscl_md5_context_t *context, const uint8_t *input, unsigned
 }
 
 /* bscl_md5_ finalization. Ends an bscl_md5_ message-digest operation, writing the message digest and zeroizing the context. */
-void bscl_md5_fini(uint8_t digest[16], bscl_md5_context_t *context) {
+static void md5_fini(uint8_t digest[16], bscl_md5_context_t *context) {
   uint8_t bits[8];
   unsigned int index, padLen;
 
@@ -121,10 +121,10 @@ void bscl_md5_fini(uint8_t digest[16], bscl_md5_context_t *context) {
   /* Pad out to 56 mod 64. */
   index = (unsigned int)((context->count[0] >> 3) & 0x3f);
   padLen = (index < 56) ? (56 - index) : (120 - index);
-  bscl_md5_update(context, PADDING, padLen);
+  bscl_md5_accumulate(context, PADDING, padLen);
 
   /* Append length (before padding) */
-  bscl_md5_update(context, bits, 8);
+  bscl_md5_accumulate(context, bits, 8);
 
   /* Store state in digest */
   _Encode(digest, context->state, 16);
@@ -133,37 +133,12 @@ void bscl_md5_fini(uint8_t digest[16], bscl_md5_context_t *context) {
   memset((void *)context, 0, sizeof(*context));
 }
 
-#if 0
-char* bscl_md5_sign (const uint8_t *str, unsigned int len)
-{
-    //int i;
-    bscl_md5_context_t    md5;
-    static char md5_str[bscl_md5_STR_LEN+1];
-    char hash[16]; //, tmp[3];
-    md5_str[0] = 0;
-            
-    bscl_md5_init(&md5);
-    bscl_md5_update (&md5, str, len);
-    bscl_md5_fini ((uint8_t*)hash, &md5);
-
-    tostring(md5_str, hash, sizeof(hash));
-#if 0        
-    for ( i = 0 ; i < 16 ; i++ )
-    {
-        _itoa((uint8_t)hash[i], tmp , 16);
-
-        if (tmp[1] == 0){
-            tmp[2]=0;    tmp[1]=tmp[0]; tmp[0]='0';
-        }
-        strcat(md5_str, tmp);
-    }
-#endif
-    return md5_str;
+void bscl_md5_finish(bscl_md5_context_t *ctx, bscl_md5_digest_t *digest) {
+  md5_fini(digest->digest, ctx);
 }
-#endif
 
 /* bscl_md5_ basic transformation. Transforms state based on block. */
-static void _bscl_md5_Transform(unsigned int state[4], const uint8_t block[64]) {
+static void md5_Transform(unsigned int state[4], const uint8_t block[64]) {
   unsigned int a = state[0], b = state[1], c = state[2], d = state[3], x[16];
 
   _Decode(x, block, 64);

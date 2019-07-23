@@ -51,3 +51,7 @@ add_executable(test_sort ${CMAKE_SOURCE_DIR}/test/test_sort.c ${CMAKE_SOURCE_DIR
 add_executable(test_getopt ${CMAKE_SOURCE_DIR}/test/test_getopt.c)
 target_link_libraries(test_getopt bscl)
 
+
+add_executable(md5 ${CMAKE_SOURCE_DIR}/tools/md5/main.c)
+target_link_libraries(md5 bscl)
+

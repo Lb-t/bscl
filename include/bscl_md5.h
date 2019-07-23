@@ -11,6 +11,6 @@ typedef struct {
   uint8_t digest[16];
 }bscl_md5_digest_t;
 
-void bscl_md5_prepare(bscl_md5_context_t *ctx);
-void bscl_md5_caculate_next(bscl_md5_context_t *ctx, const uint8_t *data, unsigned int len);
+void bscl_md5_init(bscl_md5_context_t *ctx);
+void bscl_md5_accumulate(bscl_md5_context_t *ctx, const uint8_t *data, unsigned int len);
 void bscl_md5_finish(bscl_md5_context_t *ctx,bscl_md5_digest_t *digest);

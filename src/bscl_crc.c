@@ -2,7 +2,7 @@
 
 #define POLY 0x1021
 
-uint16_t crc_ccitt(uint8_t *q, int len) {
+uint16_t bscl_crc16_ccitt(uint8_t *q, int len) {
   static const uint16_t ccitt_table[256] = {
       0x0000, 0x1021, 0x2042, 0x3063, 0x4084, 0x50A5, 0x60C6, 0x70E7, 0x8108, 0x9129, 0xA14A, 0xB16B, 0xC18C, 0xD1AD, 0xE1CE,
       0xF1EF, 0x1231, 0x0210, 0x3273, 0x2252, 0x52B5, 0x4294, 0x72F7, 0x62D6, 0x9339, 0x8318, 0xB37B, 0xA35A, 0xD3BD, 0xC39C,
@@ -45,4 +45,32 @@ uint16_t crc_ccitt_cacu(unsigned char *addr, int num, uint16_t crc) {
     crc &= 0xFFFF; /* Ensure CRC remains 16-bit value */
   }                /* Loop until num=0 */
   return (crc);    /* Return updated CRC */
+}
+
+static uint32_t crc32_table[256];
+
+static void crc32_make_table(uint32_t poly) {
+  for (uint32_t i = 0; i < 0x100; ++i) {
+    uint32_t c = i;
+    for (int j = 0; j < 8; ++j) {
+      if (c & 1) {
+        c = poly ^ c >> 1;
+      } else {
+        c = c >> 1;
+      }
+    }
+    crc32_table[i] = c;
+  }
+}
+
+void bscl_crc32_init(uint32_t poly) {
+  crc32_make_table(poly);
+}
+
+uint32_t bscl_crc32(const void *buf, size_t size, uint32_t init) {
+  const uint8_t *p = buf;
+  uint32_t crc = init;
+  while (size--)
+    crc = crc32_table[(crc ^ *p++) & 0xFF] ^ (crc >> 8);
+  return crc ^ ~0U;
 }

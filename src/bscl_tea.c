@@ -68,9 +68,4 @@ bool bscl_decryptData(uint8_t *data, uint32_t len) {
   return true;
 }
 
-void bscl_fillRandom(uint8_t *data, uint16_t len) {
-  int i = 0;
-  for (i = 0; i < len; i++) {
-    data[i] = rand() % 256;
-  }
-}
+

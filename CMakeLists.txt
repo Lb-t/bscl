@@ -1,5 +1,13 @@
 cmake_minimum_required(VERSION 3.0)
-project(ezclib)
+project(bscl)
+
+if(DEFINED $CMAKE_BUILD_TYPE)
+message("-- Build Type: " ${CMAKE_BUILD_TYPE})
+else()
+set(CMAKE_BUILD_TYPE Debug)
+message("-- Build Type Default: " ${CMAKE_BUILD_TYPE})
+endif()
+
 include_directories(${CMAKE_SOURCE_DIR}/include)
 aux_source_directory(${CMAKE_SOURCE_DIR}/src SRC)
 
@@ -54,3 +62,23 @@ target_link_libraries(md5 bscl pthread)
 
 add_executable(serial_term ${CMAKE_SOURCE_DIR}/tools/sterm/sterm.c)
 target_link_libraries(serial_term bscl pthread)
+
+install(TARGETS bscl
+  CONFIGURATIONS Debug
+  ARCHIVE DESTINATION ${PROJECT_SOURCE_DIR}/../libs/lib
+)
+
+install(DIRECTORY ${PROJECT_SOURCE_DIR}/include
+  CONFIGURATIONS Debug
+  DESTINATION ${PROJECT_SOURCE_DIR}/../libs/
+)
+
+install(TARGETS bscl
+  CONFIGURATIONS Release
+  ARCHIVE DESTINATION ${PROJECT_SOURCE_DIR}/../libs/lib
+)
+
+install(DIRECTORY ${PROJECT_SOURCE_DIR}/include
+  CONFIGURATIONS Release
+  DESTINATION ${PROJECT_SOURCE_DIR}/../libs/
+)

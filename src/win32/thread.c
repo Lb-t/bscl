@@ -23,7 +23,7 @@ int bscl_os_thread_create(bscl_os_thread_t *tid, struct bscl_os_thread_attr *att
         return -1;
     }
     (*tid)->routine = routine;
-    (*tid)->handle = CreateThread(NULL, 0, thread_proc, &tid, 0, NULL);
+    (*tid)->handle = CreateThread(NULL, 0, thread_proc, *tid, 0, NULL);
     (*tid)->arg = arg;
     if ((*tid)->handle == INVALID_HANDLE_VALUE) {
         return -1;

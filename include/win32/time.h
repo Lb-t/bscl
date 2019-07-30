@@ -16,13 +16,13 @@ typedef uint32_t os_time_t;
 #if defined(__WIN32)
 #include <windows.h>
 //#define os_usleep(us)   usleep(us)
-void os_usleep(long long usec);
-#define os_msleep(ms) Sleep(ms)
-#define os_sleep(s) os_msleep((s)*1000)
-#define os_ticksleep(ticks) os_usleep(os_ticks_to_usecs(ticks))
+void bscl_os_usleep(long long usec);
+#define bscl_os_msleep(ms) Sleep(ms)
+#define bscl_os_sleep(s) bscl_os_msleep((s)*1000)
+#define bscl_os_ticksleep(ticks) bscl_os_usleep(os_ticks_to_usecs(ticks))
 #endif
 
-os_microtime_t os_micro_uptime(void);
-os_millitime_t os_milli_uptime(void);
-#define os_uptime() (os_milli_uptime()/1000)
+os_microtime_t bscl_os_micro_uptime(void);
+os_millitime_t bscl_os_milli_uptime(void);
+#define bscl_os_uptime() (os_milli_uptime()/1000)
 

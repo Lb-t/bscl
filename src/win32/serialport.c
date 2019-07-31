@@ -83,7 +83,7 @@ int bscl_serialport_open(const char *name) {
   return fd;
 }
 
-int bscl_serialport_read(int fd, void *buf, int len) {
+int bscl_serialport_read_timeout(int fd, void *buf, int len, unsigned int timeout) {
   assert(fd >= 0);
   assert(buf);
   assert(len);
@@ -108,16 +108,18 @@ int bscl_serialport_read(int fd, void *buf, int len) {
   if (!ReadFile(hComm, buf, len, &dwRead, &osReader)) {
     if (GetLastError() != ERROR_IO_PENDING) // read not delayed?
     {                                       // Error in communications; report it.
+      CloseHandle(osReader.hEvent);
       return BSCL_SERIALPORT_EFAIL;
     }
   } else {
     // read completed immediately
     // HandleASuccessfulRead(buf, dwRead);
+    CloseHandle(osReader.hEvent);
     return dwRead;
   }
 
   DWORD dwRes;
-  dwRes = WaitForSingleObject(osReader.hEvent, INFINITE);
+  dwRes = WaitForSingleObject(osReader.hEvent, timeout);
   switch (dwRes) {
     // Read completed.
   case WAIT_OBJECT_0:
@@ -125,6 +127,7 @@ int bscl_serialport_read(int fd, void *buf, int len) {
     } else {
       // Read completed successfully.
       // HandleASuccessfulRead(buf, dwRead);
+      CloseHandle(osReader.hEvent);
       return dwRead;
     }
     break;
@@ -135,6 +138,8 @@ int bscl_serialport_read(int fd, void *buf, int len) {
     // to issue another read until the first one finishes.
     //
     // This is a good time to do some background work.
+    CloseHandle(osReader.hEvent);
+    return 0;
     break;
 
   default:
@@ -143,7 +148,11 @@ int bscl_serialport_read(int fd, void *buf, int len) {
     // event handle.
     break;
   }
-  return 0;
+  return dwRead;
+}
+
+int bscl_serialport_read(int fd, void *buf, int len) {
+  return bscl_serialport_read_timeout(fd, buf, len, INFINITE);
 }
 
 int bscl_serialport_write(int fd, void *buf, int len) {

@@ -26,6 +26,7 @@ typedef struct bscl_serialport_t_ bscl_serialport_t;
 
 int bscl_serialport_open(const char *name);
 int bscl_serialport_read(int fd, void *buf, int len);
+int bscl_serialport_read_timeout(int fd, void *buf, int len, unsigned int timeout);
 int bscl_serialport_close(int fd);
 int bscl_serialport_config(int fd, bscl_serialport_config_t *conf);
 int bscl_serialport_write(int fd, void *buf, int len);

@@ -1,9 +1,9 @@
 #pragma once
 #include <stdint.h>
 
-typedef uint64_t os_microtime_t;
-typedef uint32_t os_millitime_t;
-typedef uint32_t os_time_t;
+typedef uint64_t bscl_os_microtime_t;
+typedef uint32_t bscl_os_millitime_t;
+typedef uint32_t bscl_os_time_t;
 
 
 #define OS_MICROSECONDS_PER_TICK 1000
@@ -22,7 +22,7 @@ void bscl_os_usleep(long long usec);
 #define bscl_os_ticksleep(ticks) bscl_os_usleep(os_ticks_to_usecs(ticks))
 #endif
 
-os_microtime_t bscl_os_micro_uptime(void);
-os_millitime_t bscl_os_milli_uptime(void);
-#define bscl_os_uptime() (os_milli_uptime()/1000)
+bscl_os_microtime_t bscl_os_micro_time(void);
+bscl_os_millitime_t bscl_os_milli_time(void);
+#define bscl_os_time() (os_milli_uptime()/1000)
 

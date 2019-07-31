@@ -39,7 +39,7 @@ int bscl_serialport_list_begin(void **sp_list) {
 int bscl_serialport_list_next(void *sp_list, char *name, unsigned long len) {
   bscl_serialport_reg_t *reg = sp_list;
   char value_name[20];
-  long value_len = 20;
+  unsigned long value_len = 20;
   int ret = RegEnumValue(reg->key, reg->index, value_name, &value_len, NULL, NULL, (LPBYTE)name, &len);
   if (ret != ERROR_SUCCESS) {
     return BSCL_SERIALPORT_EFAIL;

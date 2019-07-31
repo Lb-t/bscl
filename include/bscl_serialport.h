@@ -29,3 +29,8 @@ int bscl_serialport_read(int fd, void *buf, int len);
 int bscl_serialport_close(int fd);
 int bscl_serialport_config(int fd, bscl_serialport_config_t *conf);
 int bscl_serialport_write(int fd, void *buf, int len);
+
+
+int bscl_serialport_list_begin(void **sp_list);
+int bscl_serialport_list_next(void *sp_list, char *name, unsigned long len);
+int bscl_serialport_list_end(void *sp_list);

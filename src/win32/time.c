@@ -1,6 +1,5 @@
 #include "bscl_os.h"
 #include <Windows.h>
-#if defined(_MSC_VER)
 bscl_os_microtime_t bscl_os_micro_time(void)
 {
     return bscl_os_milli_time() * 1000;
@@ -22,4 +21,3 @@ void bscl_os_usleep(long long usec)
     WaitForSingleObject(timer, INFINITE);
     CloseHandle(timer);
 }
-#endif

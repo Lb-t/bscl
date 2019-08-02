@@ -71,8 +71,10 @@ target_link_libraries(test_getopt bscl ${OS_LIB})
 add_executable(md5 ${CMAKE_SOURCE_DIR}/tools/md5/main.c)
 target_link_libraries(md5 bscl ${OS_LIB})
 
+if (CMAKE_SYSTEM_NAME MATCHES "Windows")
 add_executable(serial_term ${CMAKE_SOURCE_DIR}/tools/sterm/sterm.c)
 target_link_libraries(serial_term bscl ${OS_LIB})
+endif (CMAKE_SYSTEM_NAME MATCHES "Windows")	
 
 install(TARGETS bscl
   CONFIGURATIONS Debug

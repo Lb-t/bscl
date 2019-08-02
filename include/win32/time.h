@@ -13,7 +13,7 @@ typedef uint32_t bscl_os_time_t;
 #define os_ticks_to_usecs(ticks) ((ticks)*1000000/OS_TICKS_PER_SECOND)
 
 
-#if defined(__WIN32)
+#if defined(_WIN32)
 #include <windows.h>
 //#define os_usleep(us)   usleep(us)
 void bscl_os_usleep(long long usec);

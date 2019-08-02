@@ -23,7 +23,7 @@ int main(int argc, char *argv[]) {
   fclose(fp);
   bscl_md5_finish(&ctx, &digest);
 
-  for (int i; i < sizeof(digest); ++i) {
+  for (int i=0; i < sizeof(digest); ++i) {
     printf("%02x ",digest.digest[i]);
   }
   printf("\n");

@@ -9,7 +9,7 @@ struct bscl_os_sem_win32_t_ {
     HANDLE hd;
 };
 
-int bscl_os_sem_create(bscl_os_sem_t *sem, const char cname[4], unsigned int value)
+int bscl_os_sem_create(bscl_os_sem_t *sem, unsigned int value)
 {
     (*sem) = (struct bscl_os_sem_win32_t_*)malloc(sizeof(struct bscl_os_sem_win32_t_));
     if (*sem == NULL) {

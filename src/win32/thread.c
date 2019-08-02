@@ -1,7 +1,6 @@
 #include <windows.h>
 #include "bscl_os.h"
 
-#if defined(__GNUC__)
 struct bscl_os_thread_win32_t_ {
     HANDLE handle;
     void *arg;
@@ -42,4 +41,3 @@ int bscl_os_thread_join(bscl_os_thread_t tid, void **retval)
 }
 
 
-#endif

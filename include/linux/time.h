@@ -1,6 +1,6 @@
 #pragma once
 #include <stdint.h>
-
+#include <unistd.h>
 typedef uint64_t bscl_os_microtime_t;
 typedef uint32_t bscl_os_millitime_t;
 

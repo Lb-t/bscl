@@ -1,6 +1,10 @@
 #include <poll.h>
 #include <termios.h>
 #include <fcntl.h>
+#include <string.h>
+#include<sys/types.h>
+#include<sys/stat.h>
+#include <unistd.h>
 #include "bscl_serialport.h"
 
 int bscl_serialport_open(const char *name) {
@@ -8,6 +12,7 @@ int bscl_serialport_open(const char *name) {
   if (fd < 0) {
     return -1;
   }
+  return fd;
 }
 int bscl_serialport_read(int fd, void *buf, int len) {
   return read(fd, buf, len);

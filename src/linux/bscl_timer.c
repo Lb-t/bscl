@@ -11,8 +11,6 @@ struct bscl_os_timer_t_ {
   void (*callback)(void *);
   void *data;
 };
-static void (*bscl_time_callback)(void *);
-static void *bscl_timer_callbackData = NULL;
 
 static bscl_timer_t *bscl_timer_start = NULL;
 void bscl_timer_on(int arg) {

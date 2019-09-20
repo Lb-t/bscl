@@ -1,6 +1,7 @@
 #include "bscl_serialport.h"
 #include <assert.h>
 #include <stdio.h>
+#include <stdint.h>
 #include <string.h>
 #include <windows.h>
 #include <setupapi.h>

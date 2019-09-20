@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <windows.h>
+#include <setupapi.h>
 #define DEV_PATH_MAX 128
 #define MAX_OPEN_NUM 8
 
@@ -139,7 +140,7 @@ int bscl_serialport_read_timeout(int fd, void *buf, int len, unsigned int timeou
     //
     // This is a good time to do some background work.
     CloseHandle(osReader.hEvent);
-    return 0;
+    return dwRead;
     break;
 
   default:
@@ -268,3 +269,78 @@ int bscl_serialport_config(int fd, bscl_serialport_config_t *conf) {
   }
   return 0;
 }
+
+#define SP_PORT_HID_FORMAT "USB\\VID_%04x&PID_%04x&REV_%04x&MI_%02x"
+
+int sp_port_find_usb(char *name, int len, uint16_t idVendor, uint16_t idProduct,
+                     uint16_t bcdDevice, uint8_t bInterfaceNumber)
+{
+    HDEVINFO DeviceInfoSet;
+    DWORD DeviceIndex = 0;
+    SP_DEVINFO_DATA DeviceInfoData;
+    char szBuffer[1024] = {0};
+    DEVPROPTYPE ulPropertyType;
+    DWORD dwSize = 0;
+    char device_hid_prefix[64];
+    const char device_class[] = "Ports";
+    snprintf(device_hid_prefix, sizeof(device_hid_prefix), SP_PORT_HID_FORMAT,
+             idVendor, idProduct, bcdDevice, bInterfaceNumber);
+
+    DeviceInfoSet = SetupDiGetClassDevs(NULL, "USB", NULL,
+                                        DIGCF_ALLCLASSES | DIGCF_PRESENT);
+    if (DeviceInfoSet == INVALID_HANDLE_VALUE)
+        return -1;
+
+    memset(&DeviceInfoData, 0, sizeof(SP_DEVINFO_DATA));
+    DeviceInfoData.cbSize = sizeof(SP_DEVINFO_DATA);
+
+    while (SetupDiEnumDeviceInfo(DeviceInfoSet, DeviceIndex, &DeviceInfoData)) {
+        DeviceIndex++;
+        if (SetupDiGetDeviceRegistryProperty(
+                DeviceInfoSet, &DeviceInfoData, SPDRP_HARDWAREID,
+                &ulPropertyType, (BYTE *)szBuffer,
+                sizeof(szBuffer), // The size, in bytes
+                &dwSize)) {
+
+            // check device id
+            if (strncmp(szBuffer, device_hid_prefix,
+                        strlen(device_hid_prefix)) == 0) {
+                // check device class
+                if (SetupDiGetDeviceRegistryProperty(
+                        DeviceInfoSet, &DeviceInfoData, SPDRP_CLASS,
+                        &ulPropertyType, (BYTE *)szBuffer,
+                        sizeof(szBuffer), // The size, in bytes
+                        &dwSize)) {
+
+                    if (strncmp(szBuffer, device_class,
+                                sizeof(device_class) - 1) == 0) {
+                        // find port name
+                        HKEY hDeviceRegistryKey;
+                        hDeviceRegistryKey = SetupDiOpenDevRegKey(
+                            DeviceInfoSet, &DeviceInfoData, DICS_FLAG_GLOBAL, 0,
+                            DIREG_DEV, KEY_READ);
+                        if (hDeviceRegistryKey != INVALID_HANDLE_VALUE) {
+                            // Read in the name of the port
+                            char pszPortName[1024];
+                            DWORD dwSize = sizeof(pszPortName);
+                            DWORD dwType = 0;
+
+                            if ((RegQueryValueEx(hDeviceRegistryKey, "PortName",
+                                                 NULL, &dwType,
+                                                 (LPBYTE)pszPortName,
+                                                 &dwSize) == ERROR_SUCCESS) &&
+                                (dwType == REG_SZ)) {
+                                strncpy(name, pszPortName, len);
+                                RegCloseKey(hDeviceRegistryKey);
+                                return 0;
+                            }
+                            RegCloseKey(hDeviceRegistryKey);
+                        }
+                    }
+                }
+            }
+        }
+    }
+    return -1;
+}
+

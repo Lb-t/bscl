@@ -66,9 +66,18 @@ int bscl_rbtree_init(bscl_rbtree_t *tree) {
   return 0;
 }
 
-static int insert_fixup(bscl_rbtree_t *tree, bscl_rbtree_node_t *x)
-{
-  
+static int insert_fixup(bscl_rbtree_t *tree, bscl_rbtree_node_t *x) {
+  bscl_rbtree_node_t *parent, *gparent;
+  while ((parent = x->p) && parent->color == BSCL_RBTREE_RED) {
+    gparent = parent->p;
+    if (gparent) {
+      if (is_left_child(parent)) {
+        bscl_rbtree_t *uncle = parent->r;
+      } else {
+        bscl_rbtree_t *uncle = parent->l;
+      }
+    }
+  }
 }
 
 int bscl_rbtree_insert(bscl_rbtree_t *tree, bscl_rbtree_node_t *x) {
@@ -97,8 +106,9 @@ int bscl_rbtree_insert(bscl_rbtree_t *tree, bscl_rbtree_node_t *x) {
     }
   }
 
-  x->color=BSCL_RBTREE_RED;
+  x->color = BSCL_RBTREE_RED;
 
+  insert_fixup(tree, x);
 
   return 0;
 }

@@ -34,7 +34,7 @@ static void bscl_bheap_sift_down(bscl_bheap_t *h, int start) {
     }
 
     if (bscl_bheap_compare(h, c, min) > 0) {
-      bscl_bheap_swap(h, c, max);
+      bscl_bheap_swap(h, c, min);
     } else {
       break;
     }

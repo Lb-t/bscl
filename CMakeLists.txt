@@ -47,10 +47,8 @@ target_link_libraries(test_vector bscl )
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
 
-if (CMAKE_SYSTEM_NAME MATCHES "Windows")	
 add_executable(test_serialport ${CMAKE_SOURCE_DIR}/test/test_serialport.c)
 target_link_libraries(test_serialport bscl)
-endif (CMAKE_SYSTEM_NAME MATCHES "Windows")	
 
 
 add_executable(test_bstree ${CMAKE_SOURCE_DIR}/test/test_bstree.c)

@@ -23,7 +23,7 @@ static int left_rotate(bscl_rbtree_t *tree, bscl_rbtree_node_t *x) {
   } else {
     if (is_left_child(temp)) {
       temp->p->l = temp;
-    } else if (is_right_child(node)) {
+    } else if (is_right_child(temp)) {
       temp->p->r = temp;
     } else {
       assert(0);
@@ -51,7 +51,7 @@ static int right_rotate(bscl_rbtree_t *tree, bscl_rbtree_node_t *x) {
   } else {
     if (is_left_child(temp)) {
       temp->p->l = temp;
-    } else if (is_right_child(node)) {
+    } else if (is_right_child(temp)) {
       temp->p->r = temp;
     } else {
       assert(0);
@@ -72,12 +72,13 @@ static int insert_fixup(bscl_rbtree_t *tree, bscl_rbtree_node_t *x) {
     gparent = parent->p;
     if (gparent) {
       if (is_left_child(parent)) {
-        bscl_rbtree_t *uncle = parent->r;
+        bscl_rbtree_node_t *uncle = parent->r;
       } else {
-        bscl_rbtree_t *uncle = parent->l;
+        bscl_rbtree_node_t *uncle = parent->l;
       }
     }
   }
+  return 0;
 }
 
 int bscl_rbtree_insert(bscl_rbtree_t *tree, bscl_rbtree_node_t *x) {

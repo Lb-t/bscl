@@ -3,6 +3,8 @@ build
 .ccls
 compile_commands.json
 compile_flags.txt
+.ccls
+.ccls-cache/
 GPATH
 GRTAGS
 GTAGS

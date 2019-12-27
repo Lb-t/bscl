@@ -77,11 +77,18 @@ int bscl_serialport_open(const char *name) {
   if (hComm == INVALID_HANDLE_VALUE) {
     return BSCL_SERIALPORT_EFAIL;
   }
+
+  if (SetCommMask(hComm, EV_RXCHAR | EV_ERR) == 0) {
+    return BSCL_SERIALPORT_EFAIL;
+  }
+
   sp.port[fd] = (bscl_serialport_t *)malloc(sizeof(bscl_serialport_t));
   sp.port[fd]->hComm = hComm;
+
   if (!sp.port[fd]) {
     return BSCL_SERIALPORT_EMEM;
   }
+
   return fd;
 }
 
@@ -97,59 +104,37 @@ int bscl_serialport_read_timeout(int fd, void *buf, int len, unsigned int timeou
   DWORD dwRead;
   OVERLAPPED osReader = {0};
 
-  // Create the overlapped event. Must be closed before exiting
-  // to avoid a handle leak.
   osReader.hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
 
   if (osReader.hEvent == NULL) {
-    // Error creating overlapped event; abort.
     return BSCL_SERIALPORT_EFAIL;
   }
 
-  // Issue read operation.
-  if (!ReadFile(hComm, buf, len, &dwRead, &osReader)) {
-    if (GetLastError() != ERROR_IO_PENDING) // read not delayed?
-    {                                       // Error in communications; report it.
+  COMMTIMEOUTS timeouts;
+  memset(&timeouts, 0, sizeof(timeouts));
+  timeouts.ReadIntervalTimeout = 0;
+  timeouts.ReadTotalTimeoutMultiplier = 1;
+  timeouts.ReadTotalTimeoutConstant = timeout;
+  if (SetCommTimeouts(hComm, &timeouts) == 0) {
+    printf("SetCommTimeouts() failed");
+  }
+
+  if (!ReadFile(hComm, buf, len, NULL, &osReader)) {
+    if (GetLastError() != ERROR_IO_PENDING) {
       CloseHandle(osReader.hEvent);
+      //  printf("read error\n");
       return BSCL_SERIALPORT_EFAIL;
     }
   } else {
-    // read completed immediately
-    // HandleASuccessfulRead(buf, dwRead);
     CloseHandle(osReader.hEvent);
-    return dwRead;
+    return len;
   }
 
-  DWORD dwRes;
-  dwRes = WaitForSingleObject(osReader.hEvent, timeout);
-  switch (dwRes) {
-    // Read completed.
-  case WAIT_OBJECT_0:
-    if (!GetOverlappedResult(hComm, &osReader, &dwRead, FALSE)) { // Error in communications; report it.
-    } else {
-      // Read completed successfully.
-      // HandleASuccessfulRead(buf, dwRead);
-      CloseHandle(osReader.hEvent);
-      return dwRead;
-    }
-    break;
-
-  case WAIT_TIMEOUT:
-    // Operation isn't complete yet. fWaitingOnRead flag isn't
-    // changed since I'll loop back around, and I don't want
-    // to issue another read until the first one finishes.
-    //
-    // This is a good time to do some background work.
+  if (!GetOverlappedResult(hComm, &osReader, &dwRead, TRUE)) {
     CloseHandle(osReader.hEvent);
-    return dwRead;
-    break;
-
-  default:
-    // Error in the WaitForSingleObject; abort.
-    // This indicates a problem with the OVERLAPPED structure's
-    // event handle.
-    break;
+    return BSCL_SERIALPORT_EFAIL;
   }
+  CloseHandle(osReader.hEvent);
   return dwRead;
 }
 
@@ -182,25 +167,11 @@ int bscl_serialport_write(int fd, void *buf, int len) {
       // WriteFile failed, but isn't delayed. Report error and abort.
       fRes = FALSE;
     } else {
-      dwRes = WaitForSingleObject(osWrite.hEvent, INFINITE);
-    }
-
-    switch (dwRes) {
-      // OVERLAPPED structure's event has been signaled.
-    case WAIT_OBJECT_0:
-      if (!GetOverlappedResult(hComm, &osWrite, &dwWritten, FALSE))
+      if (!GetOverlappedResult(hComm, &osWrite, &dwWritten, TRUE))
         fRes = FALSE;
       else
         // Write operation completed successfully.
         fRes = TRUE;
-      break;
-
-    default:
-      // An error has occurred in WaitForSingleObject.
-      // This usually indicates a problem with the
-      // OVERLAPPED structure's event handle.
-      fRes = FALSE;
-      break;
     }
   } else {
     // WriteFile completed immediately.
@@ -273,75 +244,60 @@ int bscl_serialport_config(int fd, bscl_serialport_config_t *conf) {
 
 #define SP_PORT_HID_FORMAT "USB\\VID_%04x&PID_%04x&REV_%04x&MI_%02x"
 
-int sp_port_find_usb(char *name, int len, uint16_t idVendor, uint16_t idProduct,
-                     uint16_t bcdDevice, uint8_t bInterfaceNumber)
-{
-    HDEVINFO DeviceInfoSet;
-    DWORD DeviceIndex = 0;
-    SP_DEVINFO_DATA DeviceInfoData;
-    char szBuffer[1024] = {0};
-    DEVPROPTYPE ulPropertyType;
-    DWORD dwSize = 0;
-    char device_hid_prefix[64];
-    const char device_class[] = "Ports";
-    snprintf(device_hid_prefix, sizeof(device_hid_prefix), SP_PORT_HID_FORMAT,
-             idVendor, idProduct, bcdDevice, bInterfaceNumber);
+int sp_port_find_usb(char *name, int len, uint16_t idVendor, uint16_t idProduct, uint16_t bcdDevice, uint8_t bInterfaceNumber) {
+  HDEVINFO DeviceInfoSet;
+  DWORD DeviceIndex = 0;
+  SP_DEVINFO_DATA DeviceInfoData;
+  char szBuffer[1024] = {0};
+  DEVPROPTYPE ulPropertyType;
+  DWORD dwSize = 0;
+  char device_hid_prefix[64];
+  const char device_class[] = "Ports";
+  snprintf(device_hid_prefix, sizeof(device_hid_prefix), SP_PORT_HID_FORMAT, idVendor, idProduct, bcdDevice, bInterfaceNumber);
 
-    DeviceInfoSet = SetupDiGetClassDevs(NULL, "USB", NULL,
-                                        DIGCF_ALLCLASSES | DIGCF_PRESENT);
-    if (DeviceInfoSet == INVALID_HANDLE_VALUE)
-        return -1;
-
-    memset(&DeviceInfoData, 0, sizeof(SP_DEVINFO_DATA));
-    DeviceInfoData.cbSize = sizeof(SP_DEVINFO_DATA);
-
-    while (SetupDiEnumDeviceInfo(DeviceInfoSet, DeviceIndex, &DeviceInfoData)) {
-        DeviceIndex++;
-        if (SetupDiGetDeviceRegistryProperty(
-                DeviceInfoSet, &DeviceInfoData, SPDRP_HARDWAREID,
-                &ulPropertyType, (BYTE *)szBuffer,
-                sizeof(szBuffer), // The size, in bytes
-                &dwSize)) {
-
-            // check device id
-            if (strncmp(szBuffer, device_hid_prefix,
-                        strlen(device_hid_prefix)) == 0) {
-                // check device class
-                if (SetupDiGetDeviceRegistryProperty(
-                        DeviceInfoSet, &DeviceInfoData, SPDRP_CLASS,
-                        &ulPropertyType, (BYTE *)szBuffer,
-                        sizeof(szBuffer), // The size, in bytes
-                        &dwSize)) {
-
-                    if (strncmp(szBuffer, device_class,
-                                sizeof(device_class) - 1) == 0) {
-                        // find port name
-                        HKEY hDeviceRegistryKey;
-                        hDeviceRegistryKey = SetupDiOpenDevRegKey(
-                            DeviceInfoSet, &DeviceInfoData, DICS_FLAG_GLOBAL, 0,
-                            DIREG_DEV, KEY_READ);
-                        if (hDeviceRegistryKey != INVALID_HANDLE_VALUE) {
-                            // Read in the name of the port
-                            char pszPortName[1024];
-                            DWORD dwSize = sizeof(pszPortName);
-                            DWORD dwType = 0;
-
-                            if ((RegQueryValueEx(hDeviceRegistryKey, "PortName",
-                                                 NULL, &dwType,
-                                                 (LPBYTE)pszPortName,
-                                                 &dwSize) == ERROR_SUCCESS) &&
-                                (dwType == REG_SZ)) {
-                                strncpy(name, pszPortName, len);
-                                RegCloseKey(hDeviceRegistryKey);
-                                return 0;
-                            }
-                            RegCloseKey(hDeviceRegistryKey);
-                        }
-                    }
-                }
-            }
-        }
-    }
+  DeviceInfoSet = SetupDiGetClassDevs(NULL, "USB", NULL, DIGCF_ALLCLASSES | DIGCF_PRESENT);
+  if (DeviceInfoSet == INVALID_HANDLE_VALUE)
     return -1;
-}
 
+  memset(&DeviceInfoData, 0, sizeof(SP_DEVINFO_DATA));
+  DeviceInfoData.cbSize = sizeof(SP_DEVINFO_DATA);
+
+  while (SetupDiEnumDeviceInfo(DeviceInfoSet, DeviceIndex, &DeviceInfoData)) {
+    DeviceIndex++;
+    if (SetupDiGetDeviceRegistryProperty(DeviceInfoSet, &DeviceInfoData, SPDRP_HARDWAREID, &ulPropertyType, (BYTE *)szBuffer,
+                                         sizeof(szBuffer), // The size, in bytes
+                                         &dwSize)) {
+
+      // check device id
+      if (strncmp(szBuffer, device_hid_prefix, strlen(device_hid_prefix)) == 0) {
+        // check device class
+        if (SetupDiGetDeviceRegistryProperty(DeviceInfoSet, &DeviceInfoData, SPDRP_CLASS, &ulPropertyType, (BYTE *)szBuffer,
+                                             sizeof(szBuffer), // The size, in bytes
+                                             &dwSize)) {
+
+          if (strncmp(szBuffer, device_class, sizeof(device_class) - 1) == 0) {
+            // find port name
+            HKEY hDeviceRegistryKey;
+            hDeviceRegistryKey = SetupDiOpenDevRegKey(DeviceInfoSet, &DeviceInfoData, DICS_FLAG_GLOBAL, 0, DIREG_DEV, KEY_READ);
+            if (hDeviceRegistryKey != INVALID_HANDLE_VALUE) {
+              // Read in the name of the port
+              char pszPortName[1024];
+              DWORD dwSize = sizeof(pszPortName);
+              DWORD dwType = 0;
+
+              if ((RegQueryValueEx(hDeviceRegistryKey, "PortName", NULL, &dwType, (LPBYTE)pszPortName, &dwSize) ==
+                   ERROR_SUCCESS) &&
+                  (dwType == REG_SZ)) {
+                strncpy(name, pszPortName, len);
+                RegCloseKey(hDeviceRegistryKey);
+                return 0;
+              }
+              RegCloseKey(hDeviceRegistryKey);
+            }
+          }
+        }
+      }
+    }
+  }
+  return -1;
+}

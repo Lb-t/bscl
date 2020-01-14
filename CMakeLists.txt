@@ -60,6 +60,8 @@ add_executable(test_http ${CMAKE_SOURCE_DIR}/test/test_http.c)
 target_link_libraries(test_http bscl  ${OS_LIB})
 add_executable(test_network ${CMAKE_SOURCE_DIR}/test/test_network.c)
 target_link_libraries(test_network bscl  ${OS_LIB})
+add_executable(test_ftpd ${CMAKE_SOURCE_DIR}/test/test_ftpd.c)
+target_link_libraries(test_ftpd bscl  ${OS_LIB})
 
 add_executable(test_sort ${CMAKE_SOURCE_DIR}/test/test_sort.c ${CMAKE_SOURCE_DIR}/src/bscl_sort.c)
 

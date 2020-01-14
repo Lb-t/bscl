@@ -14,6 +14,7 @@
 #include "./win32/thread.h"
 #include "./win32/time.h"
 #include "./win32/timer.h"
+#include "./win32/fs.h"
 #elif defined(__APPLE__)
 #include "./apple/mutex.h"
 #include "./apple/process.h"

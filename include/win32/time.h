@@ -14,10 +14,8 @@ typedef uint32_t bscl_os_time_t;
 
 
 #if defined(_WIN32)
-#include <windows.h>
-//#define os_usleep(us)   usleep(us)
 void bscl_os_usleep(long long usec);
-#define bscl_os_msleep(ms) Sleep(ms)
+#define bscl_os_msleep(ms) bscl_os_usleep((ms)*1000)
 #define bscl_os_sleep(s) bscl_os_msleep((s)*1000)
 #define bscl_os_ticksleep(ticks) bscl_os_usleep(os_ticks_to_usecs(ticks))
 #endif

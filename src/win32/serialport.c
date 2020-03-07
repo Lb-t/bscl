@@ -8,7 +8,6 @@
 #define DEV_PATH_MAX 128
 #define MAX_OPEN_NUM 8
 
-#pragma comment(lib, "legacy_stdio_definitions.lib")
 struct bscl_serialport_t_ {
   HANDLE hComm;
 };
@@ -153,7 +152,6 @@ int bscl_serialport_write(int fd, void *buf, int len) {
   HANDLE hComm = port->hComm;
   OVERLAPPED osWrite = {0};
   DWORD dwWritten;
-  DWORD dwRes;
   BOOL fRes;
 
   // Create this write operation's OVERLAPPED structure's hEvent.

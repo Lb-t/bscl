@@ -80,7 +80,7 @@ static inline int buffer_write(buffer_t *buffer, const void *data, uint32_t len)
         } else {
             uint32_t left = buffer->size - offset;
             memcpy(buffer->buf + offset, data, left * BUFFER_TYPE_SIZE);
-            memcpy(buffer->buf, data + left, (len - left) * BUFFER_TYPE_SIZE);
+            memcpy(buffer->buf, (uint8_t*)data + left, (len - left) * BUFFER_TYPE_SIZE);
         }
         buffer->wrp += len;
     }
@@ -129,7 +129,7 @@ static inline int buffer_copy(buffer_t *buffer, uint32_t begin, void *data, uint
         } else {
             uint32_t left = buffer->size - offset;
             memcpy(data, buffer->buf + offset, left * BUFFER_TYPE_SIZE);
-            memcpy(data + left, buffer->buf, (len - left) * BUFFER_TYPE_SIZE);
+            memcpy((uint8_t*)data + left, buffer->buf, (len - left) * BUFFER_TYPE_SIZE);
         }
     }
     return len;

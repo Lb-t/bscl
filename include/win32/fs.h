@@ -1,6 +1,7 @@
 #pragma once
 #include <stdint.h>
 #include <time.h>
+#include <stdbool.h>
 
 #define OS_FS_PATH_MAX 128
 
@@ -19,15 +20,20 @@
 #define OS_FS_SEEK_END 2 /* set file offset to EOF plus offset */
 
 struct os_fs_stat_buf {
-    uint8_t type;
-    uint32_t size;
-    time_t time;
+  uint8_t type;
+  uint32_t size;
+  time_t time;
 };
 
 struct os_fs_dirent {
-    uint8_t type;
-    char name[OS_FS_PATH_MAX];
+  uint8_t type;
+  char name[OS_FS_PATH_MAX];
 };
+
+bool os_fs_exists(const char *path);
+bool os_fs_isdir(const char *path);
+int64_t os_fs_mtime(const char *path);
+int64_t os_fs_fsize(const char *path);
 
 int os_fs_open(const char *path, uint8_t mode);
 int os_fs_write(int fd, const void *buf, int len);
@@ -46,3 +52,5 @@ int os_fs_readdir(int fd, struct os_fs_dirent *dirent);
 int os_fs_closedir(int fd);
 
 int os_fs_remove(const char *path);
+int os_fs_rename(const char *from, const char *to);
+int os_fs_symlink(const char *dst, const char *lnk);

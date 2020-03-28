@@ -1,17 +1,17 @@
-#include "bscl_os.h"
+#include "bscl.h"
 
 #include <stdlib.h>
 #include <limits.h>
 #if defined(_MSC_VER)
 #include <Windows.h>
 #include <stdio.h>
-struct bscl_os_sem_win32_t_ {
+struct bscl_sem_win32_t_ {
     HANDLE hd;
 };
 
-int bscl_os_sem_create(bscl_os_sem_t *sem, unsigned int value)
+int bscl_sem_create(bscl_sem_t *sem, unsigned int value)
 {
-    (*sem) = (struct bscl_os_sem_win32_t_*)malloc(sizeof(struct bscl_os_sem_win32_t_));
+    (*sem) = (struct bscl_sem_win32_t_*)malloc(sizeof(struct bscl_sem_win32_t_));
     if (*sem == NULL) {
         return -1;
     }
@@ -23,7 +23,7 @@ int bscl_os_sem_create(bscl_os_sem_t *sem, unsigned int value)
     }
     return 0;
 }
-int bscl_os_sem_post(bscl_os_sem_t *sem)
+int bscl_sem_post(bscl_sem_t *sem)
 {
     if (ReleaseSemaphore((*sem)->hd, 1, NULL)) {
         return 0;
@@ -33,7 +33,7 @@ int bscl_os_sem_post(bscl_os_sem_t *sem)
 }
 
 
-int bscl_os_sem_timedwait(bscl_os_sem_t *sem, unsigned int timeout_ms)
+int bscl_sem_timedwait(bscl_sem_t *sem, unsigned int timeout_ms)
 {
     DWORD dwWaitResult;
     dwWaitResult = WaitForSingleObject((*sem)->hd, // handle to semaphore
@@ -56,16 +56,16 @@ int bscl_os_sem_timedwait(bscl_os_sem_t *sem, unsigned int timeout_ms)
     return -1;
 }
 
-int bscl_os_sem_wait(bscl_os_sem_t *sem)
+int bscl_sem_wait(bscl_sem_t *sem)
 {
-    return bscl_os_sem_timedwait(sem,INFINITE);
+    return bscl_sem_timedwait(sem,INFINITE);
 }
-int bscl_os_sem_trywait(bscl_os_sem_t *sem)
+int bscl_sem_trywait(bscl_sem_t *sem)
 {
-    return bscl_os_sem_timedwait(sem,0);
+    return bscl_sem_timedwait(sem,0);
 }
 
-void bscl_os_sem_delete(bscl_os_sem_t *sem)
+void bscl_sem_delete(bscl_sem_t *sem)
 {
     CloseHandle((*sem)->hd);
     free(*sem);

@@ -5,7 +5,7 @@
 #include <signal.h>
 #include <stdio.h>
 #include <sys/time.h>
-struct bscl_os_timer_t_ {
+struct bscl_timer_t_ {
   bscl_list_head_t list_head;
   unsigned int ms;
   void (*callback)(void *);

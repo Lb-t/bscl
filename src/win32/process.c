@@ -1,10 +1,10 @@
-#include "bscl_os.h"
+#include "bscl.h"
 #include <stdio.h>
 #include <string.h>
 #include <windows.h>
 #define COMMAND_LEN_MAX 1024
 
-struct bscl_os_process_t_ {
+struct bscl_process_t_ {
   STARTUPINFO si;
   PROCESS_INFORMATION pi;
 };

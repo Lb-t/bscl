@@ -23,14 +23,14 @@ void *recv_task(void *arg) {
 int main(void) {
   char buf[1024];
   int fd = bscl_serialport_open("COM3");
-  bscl_os_thread_t recv_tid;
+  bscl_thread_t recv_tid;
   if (fd < 0) {
     return -1;
   }
   bscl_serialport_config_t conf = {
       .baudrate = 115200, .parity = BSCL_SERIALPORT_PARITY_NONE, .stopbits = BSCL_SERIALPORT_STOPBITS_1};
   bscl_serialport_config(fd, &conf);
-  bscl_os_thread_create(&recv_tid, NULL, recv_task, &fd);
+  bscl_thread_create(&recv_tid, NULL, recv_task, &fd);
   while (1) {
     fgets(buf, 1024, stdin);
     int res = bscl_serialport_write(fd, buf, strlen(buf));

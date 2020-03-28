@@ -26,8 +26,3 @@
 #error "not support os"
 #endif
 
-typedef bscl_os_timer_t bscl_timer_t;
-typedef bscl_os_sem_t bscl_sem_t;
-typedef bscl_os_mutex_t bscl_mutex_t;
-typedef bscl_os_thread_t bscl_thread_t;
-typedef bscl_os_process_t bscl_process_t;

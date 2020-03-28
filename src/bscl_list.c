@@ -13,7 +13,7 @@ struct bscl_list_item_t_ {
 struct bscl_list_t_ {
   bscl_list_item_t *head;
   bscl_list_item_t *tail;
-  bscl_os_mutex_t mutex;
+  bscl_mutex_t mutex;
   size_t size;
 };
 
@@ -24,7 +24,7 @@ bool bscl_list_insert(bscl_list_t *list, bscl_list_item_t *item, void *data, siz
   if (!newItem)
     return false;
 
-  bscl_os_mutex_lock(&list->mutex);
+  bscl_mutex_lock(&list->mutex);
   if (NULL == item) {
     newItem->next = list->head;
     list->head = newItem;
@@ -40,7 +40,7 @@ bool bscl_list_insert(bscl_list_t *list, bscl_list_item_t *item, void *data, siz
     list->tail = newItem;
   }
   list->size += 1;
-  bscl_os_mutex_unlock(&list->mutex);
+  bscl_mutex_unlock(&list->mutex);
 
   newItem->data = data;
   newItem->len = len;
@@ -53,7 +53,7 @@ bool bscl_list_remove(bscl_list_t *list, bscl_list_item_t *item) {
   if ((!list->size))
     return false;
 
-  bscl_os_mutex_lock(&list->mutex);
+  bscl_mutex_lock(&list->mutex);
   if (NULL == item->prev)
     list->head = item->next;
   else
@@ -63,7 +63,7 @@ bool bscl_list_remove(bscl_list_t *list, bscl_list_item_t *item) {
   else
     item->next->prev = item->prev;
   list->size -= 1;
-  bscl_os_mutex_unlock(&list->mutex);
+  bscl_mutex_unlock(&list->mutex);
 
   free(item);
   return true;
@@ -71,7 +71,7 @@ bool bscl_list_remove(bscl_list_t *list, bscl_list_item_t *item) {
 
 void bscl_list_init(bscl_list_t *list) {
   bscl_assert(list);
-  bscl_os_mutex_create(&list->mutex);
+  bscl_mutex_create(&list->mutex);
   list->head = NULL;
   list->tail = NULL;
   list->size = 0;
@@ -80,13 +80,13 @@ void bscl_list_init(bscl_list_t *list) {
 void bscl_list_deninit(bscl_list_t *list) {
   bscl_assert(list);
   bscl_list_item_t *item = list->head;
-  bscl_os_mutex_lock(&list->mutex);
+  bscl_mutex_lock(&list->mutex);
   while (item) {
     item = item->next;
     free(item->prev);
   }
-  bscl_os_mutex_unlock(&list->mutex);
-  bscl_os_mutex_delete(&list->mutex);
+  bscl_mutex_unlock(&list->mutex);
+  bscl_mutex_delete(&list->mutex);
 }
 
 bscl_list_t *bscl_list_new(void) {

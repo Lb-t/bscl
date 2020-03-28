@@ -34,10 +34,10 @@ struct bscl_tasklet_head {
   bscl_list_head_t list;
   void *arg;
 
-  bscl_os_sem_t *sem;
-  bscl_os_mutex_t *mutex;
+  bscl_sem_t *sem;
+  bscl_mutex_t *mutex;
 };
 
-void bscl_tasklet_head_init(struct bscl_tasklet_head *th, bscl_os_sem_t *sem, bscl_os_mutex_t *mutex);
+void bscl_tasklet_head_init(struct bscl_tasklet_head *th, bscl_sem_t *sem, bscl_mutex_t *mutex);
 
 int bscl_tasklet_dispatch(struct bscl_tasklet_head *th, int timeout_ms);

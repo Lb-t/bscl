@@ -1,9 +1,9 @@
 #pragma once
 #include <stdint.h>
 
-typedef uint64_t bscl_os_microtime_t;
-typedef uint32_t bscl_os_millitime_t;
-typedef uint32_t bscl_os_time_t;
+typedef uint64_t bscl_microtime_t;
+typedef uint32_t bscl_millitime_t;
+typedef uint32_t bscl_time_t;
 
 
 #define OS_MICROSECONDS_PER_TICK 1000
@@ -14,13 +14,13 @@ typedef uint32_t bscl_os_time_t;
 
 
 #if defined(_WIN32)
-void bscl_os_usleep(long long usec);
-#define bscl_os_msleep(ms) bscl_os_usleep((ms)*1000)
-#define bscl_os_sleep(s) bscl_os_msleep((s)*1000)
-#define bscl_os_ticksleep(ticks) bscl_os_usleep(os_ticks_to_usecs(ticks))
+void bscl_usleep(long long usec);
+#define bscl_msleep(ms) bscl_usleep((ms)*1000)
+#define bscl_sleep(s) bscl_msleep((s)*1000)
+#define bscl_ticksleep(ticks) bscl_usleep(os_ticks_to_usecs(ticks))
 #endif
 
-bscl_os_microtime_t bscl_os_micro_time(void);
-bscl_os_millitime_t bscl_os_milli_time(void);
-#define bscl_os_time() (os_milli_uptime()/1000)
+bscl_microtime_t bscl_micro_time(void);
+bscl_millitime_t bscl_milli_time(void);
+#define bscl_time() (os_milli_uptime()/1000)
 

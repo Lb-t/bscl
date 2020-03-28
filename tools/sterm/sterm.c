@@ -71,8 +71,8 @@ int main(void) {
   }
 
   // creat thread
-  bscl_os_thread_t tid;
-  bscl_os_thread_create(&tid, NULL, recv_task, &fd);
+  bscl_thread_t tid;
+  bscl_thread_create(&tid, NULL, recv_task, &fd);
   while (1) {
     int c = getch();
     char buf = c;

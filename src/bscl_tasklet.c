@@ -25,13 +25,13 @@ int bscl_tasklet_link(struct bscl_tasklet *tsl, struct bscl_tasklet_head *th) {
     return -1;
 
   if (th->mutex) {
-    bscl_os_mutex_lock(th->mutex);
+    bscl_mutex_lock(th->mutex);
   }
 
   bscl_list_insert_tail(&tsl->list, &th->list);
 
   if (th->mutex) {
-    bscl_os_mutex_unlock(th->mutex);
+    bscl_mutex_unlock(th->mutex);
   }
   tsl->head = th;
 
@@ -47,13 +47,13 @@ void bscl_tasklet_unlink(struct bscl_tasklet *tsl) {
     return;
 
   if (th->mutex) {
-    bscl_os_mutex_lock(th->mutex);
+    bscl_mutex_lock(th->mutex);
   }
 
   bscl_list_head_remove(&tsl->list);
 
   if (th->mutex) {
-    bscl_os_mutex_unlock(th->mutex);
+    bscl_mutex_unlock(th->mutex);
   }
 }
 
@@ -61,7 +61,7 @@ void bscl_tasklet_pend(struct bscl_tasklet *tsl) {
   if (tsl->pend == tsl->deal) {
     tsl->pend++;
     if (tsl->head->sem) {
-      bscl_os_sem_post(tsl->head->sem);
+      bscl_sem_post(tsl->head->sem);
     }
   } else {
     tsl->pend++;
@@ -81,11 +81,11 @@ int bscl_tasklet_dispatch(struct bscl_tasklet_head *th, int timeout_ms) {
   tsl = NULL;
 
   if (timeout_ms > 0 && th->sem != NULL) {
-    bscl_os_sem_timedwait(th->sem, timeout_ms);
+    bscl_sem_timedwait(th->sem, timeout_ms);
   }
 
   if (th->mutex) {
-    bscl_os_mutex_lock(th->mutex);
+    bscl_mutex_lock(th->mutex);
   }
 
   bscl_list_for_each_entry_safe(tsl, temp, &th->list, struct bscl_tasklet, list) {
@@ -98,7 +98,7 @@ int bscl_tasklet_dispatch(struct bscl_tasklet_head *th, int timeout_ms) {
   }
 
   if (th->mutex) {
-    bscl_os_mutex_unlock(th->mutex);
+    bscl_mutex_unlock(th->mutex);
   }
 
   return count;

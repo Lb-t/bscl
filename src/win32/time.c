@@ -1,14 +1,14 @@
-#include "bscl_os.h"
+#include "bscl.h"
 #include <Windows.h>
-bscl_os_microtime_t bscl_os_micro_time(void)
+bscl_microtime_t bscl_micro_time(void)
 {
-    return bscl_os_milli_time() * 1000;
+    return bscl_milli_time() * 1000;
 }
-bscl_os_millitime_t bscl_os_milli_time(void)
+bscl_millitime_t bscl_milli_time(void)
 {
     return GetTickCount();
 }
-void bscl_os_usleep(long long usec)
+void bscl_usleep(long long usec)
 {
     HANDLE timer;
     LARGE_INTEGER ft;

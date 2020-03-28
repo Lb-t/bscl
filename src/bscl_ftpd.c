@@ -3,12 +3,14 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <time.h>
-#include <winsock2.h>
-#include <windows.h>
-#include <ws2tcpip.h>
+
 #include "bscl_ftpd.h"
+#include "bscl_network.h"
+#include <errno.h>
+#include <ctype.h>
 
 #ifdef _NODEBUG
 #define LOG(level, format, ...)
@@ -39,7 +41,7 @@
 #define FTPD_MODE_ASCII 1
 
 typedef struct {
-  bscl_os_thread_t tid;
+  bscl_thread_t tid;
   struct sockaddr_in ctrl_addr; /* Control connection self address */
   struct sockaddr_in data_addr; /* Data address set by PORT command */
   SOCKET ctrl_socket;           /* Socket for ctrl connection */
@@ -80,7 +82,7 @@ static void close_stream(ftpd_session_t *session) {
   if (session->ctrl_socket < 0) {
     return;
   }
-  if (closesocket(session->ctrl_socket))
+  if (bscl_tcp_delete(session->ctrl_socket))
     SYS_ERROR("ftpd: Could not close control socket: %s", serr());
 
   session->ctrl_socket = -1;
@@ -176,7 +178,7 @@ static int data_socket(ftpd_session_t *session) {
     if (0 > s)
       send_ctrl_reply(session, 425, "Can't create data socket.");
     else if (0 > setsockopt(s, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on))) {
-      closesocket(s);
+      bscl_tcp_delete(s);
       s = -1;
       LOG(debug, "setsockopt fail\n");
     } else {
@@ -195,13 +197,13 @@ static int data_socket(ftpd_session_t *session) {
       }
       if (tries >= 10) {
         send_ctrl_reply(session, 425, "Can't bind data socket.");
-        closesocket(s);
+        bscl_tcp_delete(s);
         s = -1;
       } else {
         struct sockaddr_in *data_dest = &session->data_addr;
         if (0 > connect(s, (struct sockaddr *)data_dest, sizeof(*data_dest))) {
           send_ctrl_reply(session, 425, "Can't connect data socket.");
-          closesocket(s);
+          bscl_tcp_delete(s);
           s = -1;
         } else {
           session->data_socket = s;
@@ -219,7 +221,7 @@ static void close_data_socket(ftpd_session_t *session) {
     return;
   }
 
-  if (closesocket(s))
+  if (bscl_tcp_delete(s))
     fprintf(stderr, "ftpd: Error closing data socket.");
 
   LOG(debug, "close data socket\n");
@@ -238,7 +240,7 @@ static void command_retrieve(ftpd_session_t *session, char const *filename) {
   int fd = -1;
   int res = 0;
   if (session->xfer_mode == FTPD_MODE_BINARY) {
-    fd = cb->open(filename, OS_FS_MODE_READ);
+    fd = cb->open(filename, BSCL_FS_MODE_READ);
   } else {
     return;
   }
@@ -295,7 +297,7 @@ static void command_store(ftpd_session_t *session, char const *filename) {
 
 static int send_dirline(int s, int wide, time_t curTime, char const *path, char const *add, char const *fname, char *buf) {
   if (wide) {
-    struct os_fs_stat_buf stat_buf;
+    struct bscl_fs_stat_buf stat_buf;
     int plen = strlen(path);
     int alen = strlen(add);
     if (plen == 0) {
@@ -320,14 +322,18 @@ static int send_dirline(int s, int wide, time_t curTime, char const *path, char 
       enum { SIZE = 80 };
       time_t SIX_MONTHS = (365L * 24L * 60L * 60L) / 2L;
       char timeBuf[SIZE];
-      gmtime_s(&bt, &tf);
+#if _WIN32
+      gmtime_r(&bt, &tf);
+#else
+      gmtime_r(&tf, &bt);
+#endif
       if (curTime > tf + SIX_MONTHS || tf > curTime + SIX_MONTHS)
         strftime(timeBuf, SIZE, "%b %d  %Y", &bt);
       else
         strftime(timeBuf, SIZE, "%b %d %H:%M", &bt);
 
-      len = snprintf(buf, FTPD_CMD_BUF_SIZE, "%crwxrwxrwx  1 0 0 %11u %s %s\r\n", (stat_buf.type == OS_FS_TYPE_DIR) ? 'd' : '-',
-                     stat_buf.size, timeBuf, fname);
+      len = snprintf(buf, FTPD_CMD_BUF_SIZE, "%crwxrwxrwx  1 0 0 %11u %s %s\r\n",
+                     (stat_buf.type == BSCL_FS_TYPE_DIR) ? 'd' : '-', stat_buf.size, timeBuf, fname);
       if (send(s, buf, len, 0) != len)
         return 0;
     }
@@ -344,8 +350,8 @@ static void command_list(ftpd_session_t *session, char const *fname, int wide) {
   char buf[FTPD_CMD_BUF_SIZE];
   time_t curTime;
   int sc = 1;
-  struct os_fs_stat_buf stat_buf;
-  struct os_fs_dirent dirent;
+  struct bscl_fs_stat_buf stat_buf;
+  struct bscl_fs_dirent dirent;
 
   send_ctrl_reply(session, 150, "Opening ASCII mode data connection for LIST.");
 
@@ -364,7 +370,7 @@ static void command_list(ftpd_session_t *session, char const *fname, int wide) {
   } else {
     time(&curTime);
 
-    if (stat_buf.type == OS_FS_TYPE_DIR) {
+    if (stat_buf.type == BSCL_FS_TYPE_DIR) {
       int fd = cb->opendir(fname);
       if (fd < 0) {
         return;
@@ -422,7 +428,7 @@ static void command_mdtm(ftpd_session_t *session, char const *fname) {
 }
 
 static void command_size(ftpd_session_t *session, char const *fname) {
-  struct os_fs_stat_buf stbuf;
+  struct bscl_fs_stat_buf stbuf;
   char buf[FTPD_CMD_BUF_SIZE];
 
   if (session->xfer_mode != FTPD_MODE_BINARY || 0 > cb->stat(fname, &stbuf) || stbuf.size < 0) {
@@ -468,7 +474,7 @@ static void command_pasv(ftpd_session_t *session) {
         fprintf(stderr, "ftpd: Error accepting PASV connection: %s", serr());
         session->pasive = true;
       } else {
-        closesocket(s);
+        bscl_tcp_delete(s);
         s = -1;
         err = 0;
       }
@@ -476,7 +482,7 @@ static void command_pasv(ftpd_session_t *session) {
   }
   if (err) {
     send_ctrl_reply(session, 425, "Can't open passive connection.");
-    closesocket(s);
+    bscl_tcp_delete(s);
   }
 }
 
@@ -651,12 +657,7 @@ void ftpd_run(uint16_t port, const ftpd_callback_t *callback) {
 
   cb = callback;
 
-  WSADATA wsaData;
-  int res = WSAStartup(MAKEWORD(2, 2), &wsaData);
-  if (res != 0) {
-    SYS_ERROR("WSAStartup failed:\n");
-  }
-
+  bscl_netowrk_init();
   s = socket(PF_INET, SOCK_STREAM, 0);
   if (s < 0)
     SYS_ERROR("ftpd: Error creating socket: %s", serr());
@@ -666,26 +667,26 @@ void ftpd_run(uint16_t port, const ftpd_callback_t *callback) {
   addr.sin_addr.s_addr = htonl(INADDR_ANY);
   memset(addr.sin_zero, 0, sizeof(addr.sin_zero));
 
-  if (0 > bind(s, (struct sockaddr *)&addr, sizeof(addr)))
-    SYS_ERROR("ftpd: Error binding control socket: %d", WSAGetLastError());
-  else if (0 > listen(s, 1))
-    SYS_ERROR("ftpd: Error listening on control socket: %s", serr());
+  if (0 > bind(s, (struct sockaddr *)&addr, sizeof(addr))) {
+    SYS_ERROR("ftpd: Error binding control socket");
+  } else if (0 > listen(s, 1))
+    SYS_ERROR("ftpd: Error listening on control socket");
   else
     while (1) {
       int ss;
       addrLen = sizeof(addr);
       ss = accept(s, (struct sockaddr *)&addr, &addrLen);
       if (0 > ss) {
-        fprintf(stderr, "ftpd: Error accepting control connection: %s", serr());
+        fprintf(stderr, "ftpd: Error accepting control connection");
       } else {
         ftpd_session_t *session = malloc(sizeof(ftpd_session_t));
         if (NULL == session) {
-          closesocket(ss);
+          bscl_tcp_delete(ss);
         } else {
           session->ctrl_socket = ss;
           /* Initialize corresponding SessionInfo structure */
           if (0 > getsockname(ss, (struct sockaddr *)&addr, &addrLen)) {
-            fprintf(stderr, "ftpd: getsockname(): %s", serr());
+            fprintf(stderr, "ftpd: getsockname()");
           } else {
             session->self_control_port = port;
             session->pasive = false;
@@ -695,7 +696,7 @@ void ftpd_run(uint16_t port, const ftpd_callback_t *callback) {
             session->data_addr.sin_port = htons(ntohs(session->ctrl_addr.sin_port) - 1);
 
             // start session
-            bscl_os_thread_create(&session->tid, NULL, session_task, session);
+            bscl_thread_create(&session->tid, NULL, session_task, session);
           }
         }
       }

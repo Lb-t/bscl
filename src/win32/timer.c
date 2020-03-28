@@ -1,37 +1,37 @@
 #include <windows.h>
-#include "bscl_os.h"
+#include "bscl.h"
 
-struct bscl_os_timer_t_ {
+struct bscl_timer_t_ {
   unsigned int handle;
   int ticks;
   void *arg;
-  bscl_os_timer_routine_t routine;
+  bscl_timer_routine_t routine;
 };
 
-int bscl_os_timer_create(bscl_os_timer_t *tim) {
+int bscl_timer_create(bscl_timer_t *tim) {
   memset(tim, 0, sizeof(*tim));
   return 0;
 }
 
-void bscl_os_timer_cancel(bscl_os_timer_t *tim) {
+void bscl_timer_cancel(bscl_timer_t *tim) {
   if (tim->handle)
     timeKillEvent(tim->handle);
 }
 
-void bscl_os_timer_delete(bscl_os_timer_t *tim) {
+void bscl_timer_delete(bscl_timer_t *tim) {
   if (tim->handle)
     timeKillEvent(tim->handle);
 }
 
 static void CALLBACK __os_timer_svc(UINT uTimerID, UINT uMsg, DWORD_PTR dwUser, DWORD_PTR dw1, DWORD_PTR dw2) {
-  bscl_os_timer_t *tim = (bscl_os_timer_t *)dwUser;
+  bscl_timer_t *tim = (bscl_timer_t *)dwUser;
 
   if (tim->routine) {
     tim->routine(tim, tim->arg);
   }
 }
 
-int bscl_os_timer_fire(bscl_os_timer_t *tim, int ticks, bscl_os_timer_routine_t routine, void *arg) {
+int bscl_timer_fire(bscl_timer_t *tim, int ticks, bscl_timer_routine_t routine, void *arg) {
   tim->routine = routine;
   tim->arg = arg;
   tim->ticks = ticks;

@@ -1,4 +1,4 @@
-#include "win32/fs.h"
+#include "bscl_fs.h"
 #include <windows.h>
 #include <stdbool.h>
 
@@ -7,14 +7,14 @@
 typedef struct {
   HANDLE h;
   uint8_t data[0];
-} os_file_win32_t;
+} bscl_file_win32_t;
 
-static os_file_win32_t *files[MAX_OPEN_FILE];
+static bscl_file_win32_t *files[MAX_OPEN_FILE];
 
 static int new_fd(uint8_t type) {
-  size_t size = sizeof(os_file_win32_t);
+  size_t size = sizeof(bscl_file_win32_t);
 
-  if (type == OS_FS_TYPE_DIR) {
+  if (type == BSCL_FS_TYPE_DIR) {
     size += sizeof(WIN32_FIND_DATA) + 1;
   }
 
@@ -34,32 +34,32 @@ static void delete_fd(int fd) {
   files[fd] = NULL;
 }
 
-int os_fs_open(const char *path, uint8_t mode) {
+int bscl_fs_open(const char *path, uint8_t mode) {
   DWORD dwDesiredAccess = 0;
   DWORD dwCreationDisposition = 0;
-  int fd = new_fd(OS_FS_TYPE_REG);
+  int fd = new_fd(BSCL_FS_TYPE_REG);
   if (fd < 0) {
     return -1;
   }
 
-  if ((mode & OS_FS_MODE_CREATE) && (mode & OS_FS_MODE_TRUNC)) {
+  if ((mode & BSCL_FS_MODE_CREATE) && (mode & BSCL_FS_MODE_TRUNC)) {
     dwCreationDisposition |= CREATE_ALWAYS;
-  } else if (mode & OS_FS_MODE_CREATE) {
+  } else if (mode & BSCL_FS_MODE_CREATE) {
     dwCreationDisposition |= OPEN_ALWAYS;
-  } else if (mode & OS_FS_MODE_TRUNC) {
+  } else if (mode & BSCL_FS_MODE_TRUNC) {
     dwCreationDisposition |= TRUNCATE_EXISTING;
   } else {
     dwCreationDisposition |= OPEN_EXISTING;
   }
 
-  if (mode & OS_FS_MODE_READ) {
+  if (mode & BSCL_FS_MODE_READ) {
     dwDesiredAccess |= GENERIC_READ;
   }
-  if (mode & OS_FS_MODE_WRITE) {
+  if (mode & BSCL_FS_MODE_WRITE) {
     dwDesiredAccess |= GENERIC_WRITE;
   }
 
-  os_file_win32_t *f = files[fd];
+  bscl_file_win32_t *f = files[fd];
   f->h = CreateFile(path, dwDesiredAccess, 0, NULL, dwCreationDisposition, FILE_ATTRIBUTE_NORMAL, NULL);
   if (f->h == INVALID_HANDLE_VALUE) {
     delete_fd(fd);
@@ -69,8 +69,8 @@ int os_fs_open(const char *path, uint8_t mode) {
   return fd;
 }
 
-int os_fs_write(int fd, const void *buf, int len) {
-  os_file_win32_t *f = files[fd];
+int bscl_fs_write(int fd, const void *buf, int len) {
+  bscl_file_win32_t *f = files[fd];
   DWORD written;
   if (!WriteFile(f->h, buf, len, &written, NULL)) {
     return -1;
@@ -78,8 +78,8 @@ int os_fs_write(int fd, const void *buf, int len) {
   return written;
 }
 
-int os_fs_read(int fd, void *buf, int len) {
-  os_file_win32_t *f = files[fd];
+int bscl_fs_read(int fd, void *buf, int len) {
+  bscl_file_win32_t *f = files[fd];
   DWORD read;
   if (!ReadFile(f->h, buf, len, &read, NULL)) {
     return -1;
@@ -87,14 +87,14 @@ int os_fs_read(int fd, void *buf, int len) {
   return read;
 }
 
-int os_fs_seek(int fd, int offset, uint8_t origin) {
-  os_file_win32_t *f = files[fd];
+int bscl_fs_seek(int fd, int offset, uint8_t origin) {
+  bscl_file_win32_t *f = files[fd];
   DWORD dwMoveMethod;
-  if (origin == OS_FS_SEEK_SET) {
+  if (origin == BSCL_FS_SEEK_SET) {
     dwMoveMethod = FILE_BEGIN;
-  } else if (origin == OS_FS_SEEK_CUR) {
+  } else if (origin == BSCL_FS_SEEK_CUR) {
     dwMoveMethod = FILE_CURRENT;
-  } else if (origin == OS_FS_SEEK_END) {
+  } else if (origin == BSCL_FS_SEEK_END) {
     dwMoveMethod = FILE_END;
   } else {
     return -1;
@@ -104,8 +104,8 @@ int os_fs_seek(int fd, int offset, uint8_t origin) {
   return 0;
 }
 
-int os_fs_tell(int fd) {
-  os_file_win32_t *f = files[fd];
+int bscl_fs_tell(int fd) {
+  bscl_file_win32_t *f = files[fd];
   return SetFilePointer(f->h, 0, NULL, FILE_CURRENT);
 }
 
@@ -124,8 +124,8 @@ static time_t convertWindowsTimeToUnixTime(FILETIME *ftime) {
   return (time_t)temp;
 }
 
-int os_fs_fstat(int fd, struct os_fs_stat_buf *buf) {
-  os_file_win32_t *f = files[fd];
+int bscl_fs_fstat(int fd, struct bscl_fs_stat_buf *buf) {
+  bscl_file_win32_t *f = files[fd];
   BY_HANDLE_FILE_INFORMATION info;
   if (!GetFileInformationByHandle(f->h, &info)) {
     return -1;
@@ -134,14 +134,14 @@ int os_fs_fstat(int fd, struct os_fs_stat_buf *buf) {
   buf->time = convertWindowsTimeToUnixTime(&info.ftLastWriteTime);
 
   if (info.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
-    buf->type = OS_FS_TYPE_DIR;
+    buf->type = BSCL_FS_TYPE_DIR;
   } else {
-    buf->type = OS_FS_TYPE_REG;
+    buf->type = BSCL_FS_TYPE_REG;
   }
   return 0;
 }
 
-int os_fs_stat(const char *path, struct os_fs_stat_buf *buf) {
+int bscl_fs_stat(const char *path, struct bscl_fs_stat_buf *buf) {
   WIN32_FILE_ATTRIBUTE_DATA info;
   if (!GetFileAttributesEx(path, GetFileExInfoStandard, &info)) {
     return -1;
@@ -149,31 +149,31 @@ int os_fs_stat(const char *path, struct os_fs_stat_buf *buf) {
   buf->size = info.nFileSizeLow;
   buf->time = convertWindowsTimeToUnixTime(&info.ftLastWriteTime);
   if (info.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
-    buf->type = OS_FS_TYPE_DIR;
+    buf->type = BSCL_FS_TYPE_DIR;
   } else {
-    buf->type = OS_FS_TYPE_REG;
+    buf->type = BSCL_FS_TYPE_REG;
   }
 
   return 0;
 }
 
-int os_fs_flush(int fd) {
-  os_file_win32_t *f = files[fd];
+int bscl_fs_flush(int fd) {
+  bscl_file_win32_t *f = files[fd];
   FlushFileBuffers(f->h);
   return 0;
 }
 
-int os_fs_close(int fd) {
+int bscl_fs_close(int fd) {
   CloseHandle(files[fd]->h);
   delete_fd(fd);
   return 0;
 }
 
-int os_fs_mkdir(const char *path) {
+int bscl_fs_mkdir(const char *path) {
   return CreateDirectory(path, 0);
 }
 
-int os_fs_opendir(const char *path) {
+int bscl_fs_opendir(const char *path) {
   const char str_to_append[] = "\\*";
   int path_len = strlen(path);
   char *find_str = malloc(path_len + sizeof(str_to_append));
@@ -185,11 +185,11 @@ int os_fs_opendir(const char *path) {
   memcpy(find_str, path, path_len);
   memcpy(find_str + path_len, str_to_append, sizeof(str_to_append));
 
-  int fd = new_fd(OS_FS_TYPE_DIR);
+  int fd = new_fd(BSCL_FS_TYPE_DIR);
   if (fd < 0) {
     return -1;
   }
-  os_file_win32_t *f = files[fd];
+  bscl_file_win32_t *f = files[fd];
   f->h = FindFirstFile(find_str, (WIN32_FIND_DATA *)(f->data + 1));
   free(find_str);
   if (INVALID_HANDLE_VALUE == f->h) {
@@ -201,19 +201,19 @@ int os_fs_opendir(const char *path) {
   return 0;
 }
 
-int os_fs_readdir(int fd, struct os_fs_dirent *dirent) {
-  os_file_win32_t *f = files[fd];
+int bscl_fs_readdir(int fd, struct bscl_fs_dirent *dirent) {
+  bscl_file_win32_t *f = files[fd];
   WIN32_FIND_DATA *data = (WIN32_FIND_DATA *)(f->data + 1);
   bool valid = f->data[0];
   if (!valid) {
     return -1;
   }
 
-  strncpy(dirent->name, data->cFileName, OS_FS_PATH_MAX);
+  strncpy(dirent->name, data->cFileName, BSCL_FS_PATH_MAX);
   if (data->dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
-    dirent->type = OS_FS_TYPE_DIR;
+    dirent->type = BSCL_FS_TYPE_DIR;
   } else {
-    dirent->type = OS_FS_TYPE_REG;
+    dirent->type = BSCL_FS_TYPE_REG;
   }
 
   if (!FindNextFile(f->h, data)) {
@@ -222,31 +222,31 @@ int os_fs_readdir(int fd, struct os_fs_dirent *dirent) {
   return 0;
 }
 
-int os_fs_closedir(int fd) {
-  os_file_win32_t *f = files[fd];
+int bscl_fs_closedir(int fd) {
+  bscl_file_win32_t *f = files[fd];
   FindClose(f->h);
   delete_fd(fd);
   return 0;
 }
 
-int os_fs_remove(const char *path) {
-  if (os_fs_isdir(path)) {
+int bscl_fs_remove(const char *path) {
+  if (bscl_fs_isdir(path)) {
     return RemoveDirectory(path);
   } else {
     return DeleteFile(path);
   }
 }
 
-bool os_fs_exists(const char *path) {
+bool bscl_fs_exists(const char *path) {
   return GetFileAttributes(path) != INVALID_FILE_ATTRIBUTES;
 }
 
-bool os_fs_isdir(const char *path) {
+bool bscl_fs_isdir(const char *path) {
   DWORD x = GetFileAttributes(path);
   return x != INVALID_FILE_ATTRIBUTES && (x & FILE_ATTRIBUTE_DIRECTORY);
 }
 
-int64 os_fs_mtime(const char *path) {
+int64 bscl_fs_mtime(const char *path) {
   WIN32_FILE_ATTRIBUTE_DATA info;
   BOOL r = GetFileAttributesEx(path, GetFileExInfoStandard, &info);
   if (!r)
@@ -256,7 +256,7 @@ int64 os_fs_mtime(const char *path) {
   return ((int64)wt.dwHighDateTime << 32) | wt.dwLowDateTime;
 }
 
-int64 os_fs_fsize(const char *path) {
+int64 bscl_fs_fsize(const char *path) {
   WIN32_FILE_ATTRIBUTE_DATA info;
   BOOL r = GetFileAttributesEx(path, GetFileExInfoStandard, &info);
   if (!r)
@@ -264,10 +264,10 @@ int64 os_fs_fsize(const char *path) {
   return ((int64)info.nFileSizeHigh << 32) | info.nFileSizeLow;
 }
 
-bool os_fs_rename(const char *from, const char *to) {
+bool bscl_fs_rename(const char *from, const char *to) {
   return MoveFile(from, to);
 }
 
-bool os_fs_symlink(const char *dst, const char *lnk) {
-  return CreateSymbolicLink(lnk, dst, os_fs_isdir(dst));
+bool bscl_fs_symlink(const char *dst, const char *lnk) {
+  return CreateSymbolicLink(lnk, dst, bscl_fs_isdir(dst));
 }

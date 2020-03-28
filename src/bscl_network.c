@@ -188,3 +188,8 @@ int bscl_tcp_accept(const int fp, uint32_t *const ip,
   *port = ntohs(addr.sin_port);
   return res;
 }
+
+int bscl_tcp_delete(int fd){
+  bscl_network_close_socket(fd);
+  return 0;
+}

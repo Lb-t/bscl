@@ -52,3 +52,4 @@ static inline int bscl_tcp_connect(const int fd, const uint32_t ip, const uint16
 #define bscl_tcp_read(fd, data, len) recv(fd, data, len, 0)
 #define bscl_tcp_write(fd, data, len) send(fd, data, len, 0)
 int bscl_tcp_accept(const int fp, uint32_t *const ip, uint16_t *const port);
+int bscl_tcp_delete(int fd);
